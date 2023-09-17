@@ -15,5 +15,5 @@ public class Item {
     private String name;
     private String description;
     private long ownerId;
-    private boolean available;
+    private Boolean available;
 }

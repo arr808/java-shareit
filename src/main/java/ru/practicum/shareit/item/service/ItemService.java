@@ -10,13 +10,15 @@ public interface ItemService {
 
     List<ItemDto> getAll(long userId);
 
-    List<ItemDto> searchByName(String text, long userId);
+    List<ItemDto> searchByText(String text, long userId);
 
     ItemDto add(ItemDto itemDto, long userId);
 
     ItemDto update(long itemId ,ItemDto itemDto, long userId);
 
     void deleteById(long itemId, long userId);
+
+    void deleteByUserId(long userId);
 
     void deleteAll();
 }
