@@ -33,39 +33,39 @@ public class UserController {
 
     @GetMapping("/{userId}")
     public UserDto getById(@PathVariable long userId) {
-        log.debug("Получен запрос GET /users/{}", userId);
+        log.info("Получен запрос GET /users/{}", userId);
         return userService.getById(userId);
     }
 
     @GetMapping
     public List<UserDto> getAll() {
-        log.debug("Получен запрос GET /users");
+        log.info("Получен запрос GET /users");
         return userService.getAll();
     }
 
     @PostMapping
     public UserDto add(@Valid @RequestBody UserDto userDto) {
-        log.debug("Получен запрос POST /users");
+        log.info("Получен запрос POST /users");
         return userService.add(userDto);
     }
 
     @PatchMapping("/{userId}")
     public UserDto update(@PathVariable long userId,
-                          @RequestBody UserDto userDto) {
-        log.debug("Получен запрос PATCH /users/{}", userId);
+                          @Valid @RequestBody UserDto userDto) {
+        log.info("Получен запрос PATCH /users/{}", userId);
         return userService.update(userId, userDto);
     }
 
     @DeleteMapping("/{userId}")
     public void deleteById(@PathVariable long userId) {
-        log.debug("Получен запрос DELETE /users/{}", userId);
+        log.info("Получен запрос DELETE /users/{}", userId);
         itemService.deleteByUserId(userId);
         userService.deleteById(userId);
     }
 
     @DeleteMapping
     public void deleteAll() {
-        log.debug("Получен запрос DELETE /users");
+        log.info("Получен запрос DELETE /users");
         itemService.deleteAll();
         userService.deleteAll();
     }

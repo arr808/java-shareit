@@ -63,6 +63,7 @@ public class InMemoryUserRepository implements UserRepository {
     @Override
     public void deleteAll() {
         users.clear();
+        id = 0;
         log.debug("Список users отчищен");
     }
 

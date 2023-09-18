@@ -3,6 +3,7 @@ package ru.practicum.shareit.user.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserMapper;
 import ru.practicum.shareit.user.model.User;
@@ -40,6 +41,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto add(UserDto userDto) {
+        validation(userDto);
         User user = UserMapper.getModel(userDto);
         UserDto result = UserMapper.getDto(userRepository.add(user));
         log.debug("Отправлен UserDto {}", result);
@@ -62,6 +64,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteById(long id) {
+        userRepository.getById(id);
         userRepository.deleteById(id);
         log.debug("User с id = {} удален", id);
     }
@@ -70,5 +73,12 @@ public class UserServiceImpl implements UserService {
     public void deleteAll() {
         userRepository.deleteAll();
         log.debug("Все элементы User удалены");
+    }
+
+    private void validation(UserDto userDto) {
+        String name = userDto.getName();
+        String email = userDto.getEmail();
+        if (name == null || name.isBlank()) throw new ValidationException("name");
+        if (email == null || email.isBlank()) throw new ValidationException("email");
     }
 }

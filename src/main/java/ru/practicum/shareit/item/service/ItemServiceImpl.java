@@ -4,12 +4,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.service.UserService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,6 +31,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto getById(long itemId, long userId) {
+        userService.getById(userId);
         ItemDto result = ItemMapper.getDto(itemRepository.getById(itemId));
         log.debug("Отправлен ItemDto {}", result);
         return result;
@@ -35,6 +39,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemDto> getAll(long userId) {
+        userService.getById(userId);
         List<ItemDto> result = itemRepository.getAll().stream()
                 .filter(item -> item.getOwnerId() == userId)
                 .map(ItemMapper::getDto)
@@ -46,6 +51,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public List<ItemDto> searchByText(String text, long userId) {
         userService.getById(userId);
+        if (text.isBlank()) return new ArrayList<>();
         List<ItemDto> result = itemRepository.getAll().stream()
                 .filter(Item::getAvailable)
                 .filter(item -> item.getName().toLowerCase().contains(text) ||
@@ -86,12 +92,17 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public void deleteById(long itemId, long userId) {
-        itemRepository.deleteById(itemId);
-        log.debug("Item с id = {} удален", itemId);
+        UserDto userDto = userService.getById(userId);
+        Item item = itemRepository.getById(itemId);
+        if (item.getOwnerId() == userDto.getId()) {
+            itemRepository.deleteById(itemId);
+            log.debug("Item с id = {} удален", itemId);
+        } else throw new ValidationException("owner id");
     }
 
     @Override
     public void deleteByUserId(long userId) {
+        userService.getById(userId);
         for (Item item : itemRepository.getAll()) {
             if (item.getOwnerId() == userId) itemRepository.deleteById(item.getId());
         }

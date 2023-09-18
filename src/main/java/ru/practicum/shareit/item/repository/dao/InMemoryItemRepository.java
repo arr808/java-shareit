@@ -61,6 +61,7 @@ public class InMemoryItemRepository implements ItemRepository {
     @Override
     public void deleteAll() {
         items.clear();
+        id = 0;
         log.debug("Список items отчищен");
     }
 
