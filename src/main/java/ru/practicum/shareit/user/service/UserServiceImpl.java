@@ -4,6 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.ValidationException;
+import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserMapper;
 import ru.practicum.shareit.user.model.User;
@@ -17,10 +19,12 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final ItemRepository itemRepository;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(UserRepository userRepository, ItemRepository itemRepository) {
         this.userRepository = userRepository;
+        this.itemRepository = itemRepository;
     }
 
     @Override
@@ -65,6 +69,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteById(long id) {
         userRepository.getById(id);
+        deleteAllItemsFromUser(id);
         userRepository.deleteById(id);
         log.debug("User с id = {} удален", id);
     }
@@ -72,6 +77,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteAll() {
         userRepository.deleteAll();
+        itemRepository.deleteAll();
         log.debug("Все элементы User удалены");
     }
 
@@ -80,5 +86,12 @@ public class UserServiceImpl implements UserService {
         String email = userDto.getEmail();
         if (name == null || name.isBlank()) throw new ValidationException("name");
         if (email == null || email.isBlank()) throw new ValidationException("email");
+    }
+
+    private void deleteAllItemsFromUser(long userId) {
+        for (Item item : itemRepository.getAll()) {
+            if (item.getOwnerId() == userId) itemRepository.deleteById(item.getId());
+        }
+        log.debug("У User id = {} удалены все Item", userId);
     }
 }

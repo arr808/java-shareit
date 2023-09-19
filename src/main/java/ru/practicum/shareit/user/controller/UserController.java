@@ -23,12 +23,10 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
-    private final ItemService itemService;
 
     @Autowired
     public UserController(UserService userService, ItemService itemService) {
         this.userService = userService;
-        this.itemService = itemService;
     }
 
     @GetMapping("/{userId}")
@@ -59,14 +57,6 @@ public class UserController {
     @DeleteMapping("/{userId}")
     public void deleteById(@PathVariable long userId) {
         log.info("Получен запрос DELETE /users/{}", userId);
-        itemService.deleteByUserId(userId);
         userService.deleteById(userId);
-    }
-
-    @DeleteMapping
-    public void deleteAll() {
-        log.info("Получен запрос DELETE /users");
-        itemService.deleteAll();
-        userService.deleteAll();
     }
 }

@@ -11,6 +11,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserMapper;
 import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.user.service.UserService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +31,8 @@ public class UserControllerTests {
     private ObjectMapper objectMapper;
     @Autowired
     private MockMvc mockMvc;
+    @Autowired
+    UserService userService;
 
     private static final String QUERY = "/users";
 
@@ -46,7 +49,7 @@ public class UserControllerTests {
 
     @AfterEach
     public void clear() throws Exception {
-        mockMvc.perform(delete(QUERY));
+        userService.deleteAll();
     }
 
     @Test

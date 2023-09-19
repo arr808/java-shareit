@@ -22,10 +22,9 @@ public class ItemController {
     }
 
     @GetMapping("/{itemId}")
-    public ItemDto getById(@PathVariable long itemId,
-                           @RequestHeader("X-Sharer-User-Id") long userId) {
+    public ItemDto getById(@PathVariable long itemId) {
         log.info("Получен запрос GET /items/{}", itemId);
-        return itemService.getById(itemId, userId);
+        return itemService.getById(itemId);
     }
 
     @GetMapping
@@ -35,10 +34,9 @@ public class ItemController {
     }
 
     @GetMapping("/search")
-    public List<ItemDto> searchByName(@RequestParam String text,
-                                      @RequestHeader("X-Sharer-User-Id") long userId) {
+    public List<ItemDto> searchByName(@RequestParam String text) {
         log.info("Получен запрос GET /items/search?text={}", text);
-        return itemService.searchByText(text.toLowerCase(), userId);
+        return itemService.searchByText(text.toLowerCase());
     }
 
     @PostMapping
@@ -53,7 +51,8 @@ public class ItemController {
                           @RequestBody ItemDto itemDto,
                           @RequestHeader("X-Sharer-User-Id") long userId) {
         log.info("Получен запрос PATCH /items/{}", itemId);
-        return itemService.update(itemId, itemDto, userId);
+        itemDto.setId(itemId);
+        return itemService.update(itemDto, userId);
     }
 
     @DeleteMapping("/{itemId}")
@@ -61,11 +60,5 @@ public class ItemController {
                            @RequestHeader("X-Sharer-User-Id") long userId) {
         log.info("Получен запрос DELETE /items/{}", itemId);
         itemService.deleteById(itemId, userId);
-    }
-
-    @DeleteMapping
-    public void deleteAll() {
-        log.info("Получен запрос DELETE /items");
-        itemService.deleteAll();
     }
 }

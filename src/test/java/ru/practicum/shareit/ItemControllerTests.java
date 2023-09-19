@@ -13,14 +13,12 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.service.UserService;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -32,6 +30,8 @@ public class ItemControllerTests {
     private ObjectMapper objectMapper;
     @Autowired
     private MockMvc mockMvc;
+    @Autowired
+    UserService userService;
 
     private static final String ITEMS_QUERY = "/items";
     private static final String USERS_QUERY = "/users";
@@ -65,7 +65,7 @@ public class ItemControllerTests {
 
     @AfterEach
     public void clear() throws Exception {
-        mockMvc.perform(delete(USERS_QUERY));
+        userService.deleteAll();
     }
 
     @Test
@@ -85,8 +85,7 @@ public class ItemControllerTests {
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(items)));
 
-        mockMvc.perform(get(ITEMS_QUERY + "/1")
-                        .header("X-Sharer-User-Id", 1))
+        mockMvc.perform(get(ITEMS_QUERY + "/1"))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(ItemMapper.getDto(item))));
     }
@@ -105,26 +104,6 @@ public class ItemControllerTests {
         mockMvc.perform(post(ITEMS_QUERY)
                         .content(objectMapper.writeValueAsString(itemDto))
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().is(400));
-    }
-
-    @Test
-    public void shouldNotReturnItemWithUnknownUser() throws Exception {
-        mockMvc.perform(get(ITEMS_QUERY + "/1")
-                        .header("X-Sharer-User-Id", 999))
-                .andExpect(status().is(404));
-
-        mockMvc.perform(get(ITEMS_QUERY)
-                        .header("X-Sharer-User-Id", 999))
-                .andExpect(status().is(404));
-    }
-
-    @Test
-    public void shouldNotReturnItemWithOutUser() throws Exception {
-        mockMvc.perform(get(ITEMS_QUERY + "/1"))
-                .andExpect(status().is(400));
-
-        mockMvc.perform(get(ITEMS_QUERY))
                 .andExpect(status().is(400));
     }
 
@@ -312,8 +291,7 @@ public class ItemControllerTests {
         List<ItemDto> items = new ArrayList<>();
         items.add(ItemMapper.getDto(item));
 
-        mockMvc.perform(get(ITEMS_QUERY + "/search?text=item")
-                        .header("X-Sharer-User-Id", 1))
+        mockMvc.perform(get(ITEMS_QUERY + "/search?text=item"))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(items)));
     }
@@ -330,8 +308,7 @@ public class ItemControllerTests {
         List<ItemDto> items = new ArrayList<>();
         items.add(ItemMapper.getDto(item));
 
-        mockMvc.perform(get(ITEMS_QUERY + "/search?text=te")
-                        .header("X-Sharer-User-Id", 1))
+        mockMvc.perform(get(ITEMS_QUERY + "/search?text=te"))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(items)));
     }
@@ -348,8 +325,7 @@ public class ItemControllerTests {
         List<ItemDto> items = new ArrayList<>();
         items.add(ItemMapper.getDto(item));
 
-        mockMvc.perform(get(ITEMS_QUERY + "/search?text=description")
-                        .header("X-Sharer-User-Id", 1))
+        mockMvc.perform(get(ITEMS_QUERY + "/search?text=description"))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(items)));
     }
@@ -366,8 +342,7 @@ public class ItemControllerTests {
         List<ItemDto> items = new ArrayList<>();
         items.add(ItemMapper.getDto(item));
 
-        mockMvc.perform(get(ITEMS_QUERY + "/search?text=crip")
-                        .header("X-Sharer-User-Id", 1))
+        mockMvc.perform(get(ITEMS_QUERY + "/search?text=crip"))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(items)));
     }
@@ -381,48 +356,9 @@ public class ItemControllerTests {
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(ItemMapper.getDto(item))));
 
-        mockMvc.perform(get(ITEMS_QUERY + "/search?text=")
-                        .header("X-Sharer-User-Id", 1))
+        mockMvc.perform(get(ITEMS_QUERY + "/search?text="))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(new ArrayList<>())));
-    }
-
-    @Test
-    public void shouldSearchItemByNameUsingTextFromAnotherUser() throws Exception {
-        userDto.setEmail("newUser@test.ru");
-        mockMvc.perform(post(USERS_QUERY)
-                        .content(objectMapper.writeValueAsString(userDto))
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-
-        mockMvc.perform(post(ITEMS_QUERY)
-                        .content(objectMapper.writeValueAsString(itemDto))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Sharer-User-Id", 1))
-                .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(ItemMapper.getDto(item))));
-
-        List<ItemDto> items = new ArrayList<>();
-        items.add(ItemMapper.getDto(item));
-
-        mockMvc.perform(get(ITEMS_QUERY + "/search?text=item")
-                        .header("X-Sharer-User-Id", 2))
-                .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(items)));
-    }
-
-    @Test
-    public void shouldNotSearchItemFromUnknownUser() throws Exception {
-        mockMvc.perform(post(ITEMS_QUERY)
-                        .content(objectMapper.writeValueAsString(itemDto))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("X-Sharer-User-Id", 1))
-                .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(ItemMapper.getDto(item))));
-
-        mockMvc.perform(get(ITEMS_QUERY + "/search?text=item")
-                        .header("X-Sharer-User-Id", 999))
-                .andExpect(status().is(404));
     }
 
     @Test
