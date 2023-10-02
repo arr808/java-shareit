@@ -31,7 +31,8 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto getById(long itemId) {
-        ItemDto result = ItemMapper.getDto(itemRepository.getById(itemId));
+        ItemDto result = ItemMapper.getDto(itemRepository.findById(itemId)
+                .orElseThrow(() -> new NotFoundException("item")));
         log.debug("Отправлен ItemDto {}", result);
         return result;
     }
@@ -39,7 +40,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public List<ItemDto> getAll(long userId) {
         userService.getById(userId);
-        List<ItemDto> result = itemRepository.getAll().stream()
+        List<ItemDto> result = itemRepository.findAll().stream()
                 .filter(item -> item.getOwnerId() == userId)
                 .map(ItemMapper::getDto)
                 .collect(Collectors.toList());
@@ -50,12 +51,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public List<ItemDto> searchByText(String text) {
         if (text.isBlank()) return new ArrayList<>();
-        List<ItemDto> result = itemRepository.getAll().stream()
-                .filter(Item::getAvailable)
-                .filter(item -> item.getName().toLowerCase().contains(text) ||
-                        item.getDescription().toLowerCase().contains(text))
-                .map(ItemMapper::getDto)
-                .collect(Collectors.toList());
+        List<ItemDto> result = itemRepository.searchByText(text);
         log.debug("Отправлен список ItemDto {}", result);
         return result;
     }
@@ -63,7 +59,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public ItemDto add(ItemDto itemDto, long userId) {
         userService.getById(userId);
-        Item item = itemRepository.add(ItemMapper.getModel(itemDto, userId));
+        Item item = itemRepository.save(ItemMapper.getModel(itemDto, userId));
         ItemDto result = ItemMapper.getDto(item);
         log.debug("Отправлен ItemDto {}", result);
         return result;
@@ -73,7 +69,8 @@ public class ItemServiceImpl implements ItemService {
     public ItemDto update(ItemDto itemDto, long userId) {
         userService.getById(userId);
         long itemId = itemDto.getId();
-        Item item = itemRepository.getById(itemId);
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new NotFoundException("item"));
         if (item.getOwnerId() == userId) {
             Item updatingItem = ItemMapper.getModel(itemDto, userId);
             updatingItem.setId(itemId);
@@ -82,7 +79,7 @@ public class ItemServiceImpl implements ItemService {
             if (updatingItem.getDescription() == null) updatingItem.setDescription(item.getDescription());
             if (updatingItem.getAvailable() == null) updatingItem.setAvailable(item.getAvailable());
 
-            ItemDto result = ItemMapper.getDto(itemRepository.update(itemId, updatingItem));
+            ItemDto result = ItemMapper.getDto(itemRepository.save(updatingItem));
             log.debug("Отправлен ItemDto {}", result);
             return result;
         }
@@ -92,7 +89,8 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public void deleteById(long itemId, long userId) {
         UserDto userDto = userService.getById(userId);
-        Item item = itemRepository.getById(itemId);
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new NotFoundException("item"));
         if (item.getOwnerId() == userDto.getId()) {
             itemRepository.deleteById(itemId);
             log.debug("Item с id = {} удален", itemId);
