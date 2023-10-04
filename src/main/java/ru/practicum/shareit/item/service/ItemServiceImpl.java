@@ -38,6 +38,14 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    public Item findById(long itemId) {
+        Item result = itemRepository.findById(itemId)
+                .orElseThrow(() -> new NotFoundException("item"));
+        log.debug("Отправлен Item {}", result);
+        return result;
+    }
+
+    @Override
     public List<ItemDto> getAll(long userId) {
         userService.getById(userId);
         List<ItemDto> result = itemRepository.findAll().stream()

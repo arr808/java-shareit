@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
-import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.dto.BookingRequestDto;
 import ru.practicum.shareit.booking.service.BookingService;
 
 import java.util.List;
@@ -43,10 +43,10 @@ public class BookingController {
     }
 
     @PostMapping
-    public BookingDto addBooking(@RequestBody Booking booking,
+    public BookingDto addBooking(@RequestBody BookingRequestDto bookingRequestDto,
                       @RequestHeader("X-Sharer-User-Id") long bookerId) {
         log.info("Получен запрос POST /bookings");
-        return bookingService.addBooking(booking, bookerId);
+        return bookingService.addBooking(bookingRequestDto, bookerId);
     }
 
     @PatchMapping("/{bookingId}")

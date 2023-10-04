@@ -28,4 +28,10 @@ public class ExceptionsHandler {
     public ErrorResponse handleConflict(final AlreadyExistException e) {
         return new ErrorResponse(e.getParameter(), e.getMessage());
     }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleBusyException(final AlreadyBusyException e) {
+        return new ErrorResponse(e.getParameter(), e.getMessage());
+    }
 }
