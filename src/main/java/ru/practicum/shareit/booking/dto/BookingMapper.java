@@ -25,4 +25,11 @@ public class BookingMapper {
                 .end(bookingRequestDto.getEnd())
                 .build();
     }
+
+    public static NearestBooking getNearest(Booking booking) {
+        return NearestBooking.builder()
+                .id(booking.getId())
+                .bookerId(booking.getBooker().getId())
+                .build();
+    }
 }

@@ -1,4 +1,4 @@
-package ru.practicum.shareit.booking.model;
+package ru.practicum.shareit.item.comment.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,21 +25,20 @@ import java.time.LocalDateTime;
 @Setter
 @Builder
 @Entity
-@Table(name = "bookings")
-public class Booking {
+@Table(name = "comments")
+public class Comment {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    @Column(name = "date_start", nullable = false)
-    private LocalDateTime start;
-    @Column(name = "date_end", nullable = false)
-    private LocalDateTime end;
+    @Column(nullable = false)
+    private String text;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "item_id", referencedColumnName = "id")
     private Item item;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "booker_id", referencedColumnName = "id")
-    private User booker;
+    private User author;
     @Column(nullable = false)
-    private BookingState state;
+    private LocalDateTime created;
 }

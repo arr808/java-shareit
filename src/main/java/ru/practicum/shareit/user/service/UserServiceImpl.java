@@ -37,6 +37,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public User findById(long id) {
+        User result = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("user"));
+        log.debug("Отправлен UserDto {}", result);
+        return result;
+    }
+
+    @Override
     public List<UserDto> getAll() {
         List<UserDto> result = userRepository.findAll().stream()
                 .map(UserMapper::getDto)

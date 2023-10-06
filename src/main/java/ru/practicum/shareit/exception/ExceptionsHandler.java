@@ -34,4 +34,10 @@ public class ExceptionsHandler {
     public ErrorResponse handleBusyException(final AlreadyBusyException e) {
         return new ErrorResponse(e.getParameter(), e.getMessage());
     }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleStateException(final UnsupportedStatusException e) {
+        return new ErrorResponse(e.getParameter(), e.getMessage());
+    }
 }
