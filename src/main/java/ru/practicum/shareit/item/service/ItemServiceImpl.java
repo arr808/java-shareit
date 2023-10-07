@@ -51,6 +51,7 @@ public class ItemServiceImpl implements ItemService {
                 .orElseThrow(() -> new NotFoundException("item")));
         LocalDateTime today = LocalDateTime.now();
         fillByBooking(result, today, userId);
+        fillByComments(result);
         log.debug("Отправлен ItemDto {}", result);
         return result;
     }
@@ -164,9 +165,10 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private ItemDto fillByComments(ItemDto itemDto) {
-        itemDto.setComments(commentRepository.findAllByItemId(itemDto.getId()).stream()
+        List<CommentDto> commentsDto = commentRepository.findAllByItemId(itemDto.getId()).stream()
                 .map(CommentMapper::getDto)
-                .collect(Collectors.toList()));
+                .collect(Collectors.toList());
+        itemDto.setComments(commentsDto);
         return itemDto;
     }
 }
