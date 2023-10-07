@@ -166,7 +166,7 @@ public class ItemServiceImpl implements ItemService {
     private OwnerItemDto fillByComments(OwnerItemDto ownerItemDto) {
         ownerItemDto.setComments(commentRepository.findAllByItemId(ownerItemDto.getId()).stream()
                 .map(CommentMapper::getDto)
-                .collect(Collectors.toSet()));
+                .collect(Collectors.toList()));
         return ownerItemDto;
     }
 }

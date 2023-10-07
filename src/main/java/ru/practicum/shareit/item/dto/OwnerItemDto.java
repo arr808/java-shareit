@@ -8,7 +8,7 @@ import ru.practicum.shareit.item.comment.dto.CommentDto;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.util.Set;
+import java.util.List;
 
 @Data
 @Builder
@@ -21,9 +21,9 @@ public class OwnerItemDto {
     private String description;
     @NotNull
     private Boolean available;
+    List<CommentDto> comments;
     NearestBooking lastBooking;
     NearestBooking nextBooking;
-    Set<CommentDto> comments;
     @JsonIgnore
     private long ownerId;
 }
