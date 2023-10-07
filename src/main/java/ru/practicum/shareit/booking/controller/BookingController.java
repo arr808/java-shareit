@@ -40,14 +40,26 @@ public class BookingController {
     public List<BookingDto> getAllBookingsByBooker(@RequestParam(defaultValue = "ALL") String state,
                                                    @RequestHeader("X-Sharer-User-Id") long bookerId) {
         log.info("Получен запрос GET /bookings?state={}", state);
-        return bookingService.getAllBookingsByBooker(bookerId, RequestState.valueOf(state));
+        RequestState requestState;
+        try {
+            requestState = RequestState.valueOf(state);
+        } catch (IllegalArgumentException e) {
+            requestState = RequestState.UNSUPPORTED_STATUS;
+        }
+        return bookingService.getAllBookingsByBooker(bookerId, requestState);
     }
 
     @GetMapping("/owner")
     public List<BookingDto> getAllBookingsByOwner(@RequestParam(defaultValue = "ALL") String state,
                                                   @RequestHeader("X-Sharer-User-Id") long ownerId) {
         log.info("Получен запрос GET /bookings/owner?state={}", state);
-        return bookingService.getAllBookingsByOwner(ownerId, RequestState.valueOf(state));
+        RequestState requestState;
+        try {
+            requestState = RequestState.valueOf(state);
+        } catch (IllegalArgumentException e) {
+            requestState = RequestState.UNSUPPORTED_STATUS;
+        }
+        return bookingService.getAllBookingsByOwner(ownerId, requestState);
     }
 
     @PostMapping

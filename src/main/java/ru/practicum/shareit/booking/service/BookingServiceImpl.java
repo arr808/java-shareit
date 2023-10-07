@@ -1,5 +1,6 @@
 package ru.practicum.shareit.booking.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.controller.RequestState;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class BookingServiceImpl implements BookingService {
 
     private final BookingRepository bookingRepository;
@@ -40,80 +42,80 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public BookingDto getBookingById(long bookingId, long userId) {
         userService.getById(userId);
-        return BookingMapper.getDto(bookingRepository.getBookingById(bookingId, userId)
+        BookingDto result = BookingMapper.getDto(bookingRepository.getBookingById(bookingId, userId)
                 .orElseThrow(() -> new NotFoundException("booking")));
+        log.debug("Отправлен BookingDto {}", result);
+        return result;
     }
 
     @Override
     public List<BookingDto> getAllBookingsByBooker(long bookerId, RequestState state) {
         userService.getById(bookerId);
+
         LocalDateTime today = LocalDateTime.now();
+        List<Booking> bookings;
 
         switch (state.toString()) {
             case ("ALL"):
-                return bookingRepository.findAllByBookerIdOrderByStartDesc(bookerId).stream()
-                        .map(BookingMapper::getDto)
-                        .collect(Collectors.toList());
+                bookings = bookingRepository.findAllByBookerIdOrderByStartDesc(bookerId);
+                break;
             case ("WAITING"):
-                return bookingRepository.findAllByBookerIdAndStateOrderByStartDesc(bookerId, BookingState.WAITING).stream()
-                        .map(BookingMapper::getDto)
-                        .collect(Collectors.toList());
+                bookings = bookingRepository.findAllByBookerIdAndStateOrderByStartDesc(bookerId, BookingState.WAITING);
+                break;
             case ("REJECTED"):
-                return bookingRepository.findAllByBookerIdAndStateOrderByStartDesc(bookerId, BookingState.REJECTED).stream()
-                        .map(BookingMapper::getDto)
-                        .collect(Collectors.toList());
+                bookings = bookingRepository.findAllByBookerIdAndStateOrderByStartDesc(bookerId, BookingState.REJECTED);
+                break;
             case ("CURRENT"):
-                return bookingRepository.findAllByBookerIdAndStartIsBeforeAndEndIsAfterOrderByStartDesc(bookerId, today, today).stream()
-                        .map(BookingMapper::getDto)
-                        .collect(Collectors.toList());
+                bookings = bookingRepository.findAllByBookerIdAndStartIsBeforeAndEndIsAfterOrderByStartDesc(bookerId, today, today);
+                break;
             case ("PAST"):
-                return bookingRepository.findAllByBookerIdAndStartIsBeforeAndEndIsBeforeOrderByStartDesc(bookerId, today, today).stream()
-                        .map(BookingMapper::getDto)
-                        .collect(Collectors.toList());
+                bookings = bookingRepository.findAllByBookerIdAndStartIsBeforeAndEndIsBeforeOrderByStartDesc(bookerId, today, today);
+                break;
             case ("FUTURE"):
-                return bookingRepository.findAllByBookerIdAndStartIsAfterOrderByStartDesc(bookerId, today).stream()
-                        .map(BookingMapper::getDto)
-                        .collect(Collectors.toList());
+                bookings = bookingRepository.findAllByBookerIdAndStartIsAfterOrderByStartDesc(bookerId, today);
+                break;
             default:
                 throw new UnsupportedStatusException("Unknown state: UNSUPPORTED_STATUS");
         }
+        log.debug("Отправлен список Booking {}", bookings);
+        return bookings.stream()
+                .map(BookingMapper::getDto)
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<BookingDto> getAllBookingsByOwner(long ownerId, RequestState state) {
         userService.getById(ownerId);
+
         LocalDateTime today = LocalDateTime.now();
+        List<Booking> bookings;
 
         switch (state.toString()) {
             case ("ALL"):
-                return bookingRepository.findAllByItemOwnerIdOrderByStartDesc(ownerId).stream()
-                        .map(BookingMapper::getDto)
-                        .collect(Collectors.toList());
+                bookings = bookingRepository.findAllByItemOwnerIdOrderByStartDesc(ownerId);
+                break;
             case ("WAITING"):
-                return bookingRepository.findAllByItemOwnerIdAndStateOrderByStartDesc(ownerId, BookingState.WAITING).stream()
-                        .map(BookingMapper::getDto)
-                        .collect(Collectors.toList());
+                bookings = bookingRepository.findAllByItemOwnerIdAndStateOrderByStartDesc(ownerId, BookingState.WAITING);
+                break;
             case ("REJECTED"):
-                return bookingRepository.findAllByItemOwnerIdAndStateOrderByStartDesc(ownerId, BookingState.REJECTED).stream()
-                        .map(BookingMapper::getDto)
-                        .collect(Collectors.toList());
+                bookings = bookingRepository.findAllByItemOwnerIdAndStateOrderByStartDesc(ownerId, BookingState.REJECTED);
+                break;
             case ("CURRENT"):
-                return bookingRepository.findAllByItemOwnerIdAndStartIsBeforeAndEndIsAfterOrderByStartDesc(ownerId, today, today)
-                        .stream()
-                        .map(BookingMapper::getDto)
-                        .collect(Collectors.toList());
+                bookings = bookingRepository.findAllByItemOwnerIdAndStartIsBeforeAndEndIsAfterOrderByStartDesc(ownerId, today, today);
+                break;
             case ("PAST"):
-                return bookingRepository.findAllByItemOwnerIdAndStartIsBeforeAndEndIsBeforeOrderByStartDesc(ownerId, today, today)
-                        .stream()
-                        .map(BookingMapper::getDto)
-                        .collect(Collectors.toList());
+                bookings = bookingRepository.findAllByItemOwnerIdAndStartIsBeforeAndEndIsBeforeOrderByStartDesc(ownerId, today, today);
+                break;
             case ("FUTURE"):
-                return bookingRepository.findAllByItemOwnerIdAndStartIsAfterOrderByStartDesc(ownerId, today).stream()
-                        .map(BookingMapper::getDto)
-                        .collect(Collectors.toList());
+                bookings = bookingRepository.findAllByItemOwnerIdAndStartIsAfterOrderByStartDesc(ownerId, today);
+                break;
             default:
                 throw new UnsupportedStatusException("Unknown state: UNSUPPORTED_STATUS");
         }
+        log.debug("Отправлен список Booking {}", bookings);
+        return bookings.stream()
+                .map(BookingMapper::getDto)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -127,6 +129,7 @@ public class BookingServiceImpl implements BookingService {
         booking.setBooker(booker);
         booking.setItem(item);
         booking.setState(BookingState.WAITING);
+        log.debug("Добавлен новый Booking {}", booking);
         return BookingMapper.getDto(bookingRepository.save(booking));
     }
 
@@ -138,9 +141,10 @@ public class BookingServiceImpl implements BookingService {
 
         if (booking.getState().equals(BookingState.APPROVED)) throw new ValidationException("approved");
 
-        if (approved) booking.setState(BookingState.APPROVED);
-        else booking.setState(BookingState.REJECTED);
-
+        if (approved) {
+            booking.setState(BookingState.APPROVED);
+        } else booking.setState(BookingState.REJECTED);
+        log.debug("Статус Booking {} обновлен", booking);
         return BookingMapper.getDto(bookingRepository.save(booking));
     }
 

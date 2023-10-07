@@ -101,12 +101,10 @@ public class ItemServiceImpl implements ItemService {
         LocalDateTime today = LocalDateTime.now();
         bookingRepository.findFirstByItemIdAndBookerIdAndStateAndEndIsBefore(itemId, userId, BookingState.APPROVED, today)
                 .orElseThrow(() -> new ValidationException("userId"));
-        Comment comment = Comment.builder()
-                .author(userService.findById(userId))
-                .item(Item.builder().id(itemId).build())
-                .text(commentDto.getText())
-                .created(today)
-                .build();
+        Comment comment = CommentMapper.getModel(commentDto, itemId);
+        comment.setAuthor(userService.findById(userId));
+        comment.setCreated(today);
+        log.debug("Добавлен Comment {}", comment);
         return CommentMapper.getDto(commentRepository.save(comment));
     }
 
@@ -138,6 +136,7 @@ public class ItemServiceImpl implements ItemService {
                 .orElseThrow(() -> new NotFoundException("item"));
         if (item.getOwnerId() == userDto.getId()) {
             itemRepository.deleteById(itemId);
+            commentRepository.deleteAllByItemId(itemId);
             log.debug("Item с id = {} удален", itemId);
         } else throw new ValidationException("owner id");
     }
@@ -145,6 +144,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public void deleteAll() {
         itemRepository.deleteAll();
+        commentRepository.deleteAll();
         log.debug("Все элементы Item удалены");
     }
 

@@ -40,7 +40,7 @@ public class UserServiceImpl implements UserService {
     public User findById(long id) {
         User result = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("user"));
-        log.debug("Отправлен UserDto {}", result);
+        log.debug("Отправлен User {}", result);
         return result;
     }
 

@@ -1,7 +1,8 @@
 package ru.practicum.shareit.item.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.*;
+import lombok.Builder;
+import lombok.Data;
 import ru.practicum.shareit.booking.dto.NearestBooking;
 import ru.practicum.shareit.item.comment.dto.CommentDto;
 
