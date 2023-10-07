@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 
-    List<Comment> findAllByItemId(long itemId);
+    List<Comment> findAllByItemIdOrderByCreated(long itemId);
 
     void deleteAllByItemId(long itemId);
 }

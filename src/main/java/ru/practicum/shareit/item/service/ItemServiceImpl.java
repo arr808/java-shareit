@@ -72,8 +72,8 @@ public class ItemServiceImpl implements ItemService {
                 .filter(item -> item.getOwnerId() == userId)
                 .map(ItemMapper::getDto)
                 .map(itemDto -> {
-                    itemDto = fillByBooking(itemDto, today, userId);
-                    itemDto = fillByComments(itemDto, userId);
+                    fillByBooking(itemDto, today, userId);
+                    fillByComments(itemDto, userId);
                     return itemDto;
                 })
                 .collect(Collectors.toList());
@@ -152,7 +152,7 @@ public class ItemServiceImpl implements ItemService {
         log.debug("Все элементы Item удалены");
     }
 
-    private ItemDto fillByBooking(ItemDto itemDto, LocalDateTime today, long userId) {
+    private void fillByBooking(ItemDto itemDto, LocalDateTime today, long userId) {
         if (itemDto.getOwnerId() == userId) {
             long itemId = itemDto.getId();
 
@@ -164,16 +164,13 @@ public class ItemServiceImpl implements ItemService {
             if (nextBooking != null) itemDto.setNextBooking(BookingMapper.getNearest(nextBooking));
             if (lastBooking != null) itemDto.setLastBooking(BookingMapper.getNearest(lastBooking));
         }
-        return itemDto;
     }
 
-    private ItemDto fillByComments(ItemDto itemDto, long userId) {
-        if (itemDto.getOwnerId() == userId) {
-            List<CommentDto> commentsDto = commentRepository.findAllByItemId(itemDto.getId()).stream()
-                    .map(CommentMapper::getDto)
-                    .collect(Collectors.toList());
-            itemDto.setComments(commentsDto);
-        }
-        return itemDto;
+    private void fillByComments(ItemDto itemDto, long userId) {
+        long itemId = itemDto.getId();
+        List<CommentDto> commentsDto = commentRepository.findAllByItemIdOrderByCreated(itemId).stream()
+                .map(CommentMapper::getDto)
+                .collect(Collectors.toList());
+        itemDto.setComments(commentsDto);
     }
 }
