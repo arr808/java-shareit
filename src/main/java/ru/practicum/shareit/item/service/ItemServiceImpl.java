@@ -53,7 +53,7 @@ public class ItemServiceImpl implements ItemService {
         LocalDateTime today = LocalDateTime.now();
         fillByBooking(result, today, userId);
         fillByComments(result);
-        log.debug("Отправлен ItemDto {}", result);
+        log.debug("Отправлен OwnerItemDto {}", result);
         return result;
     }
 
