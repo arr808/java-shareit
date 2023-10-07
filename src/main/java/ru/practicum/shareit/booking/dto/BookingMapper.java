@@ -26,8 +26,8 @@ public class BookingMapper {
                 .build();
     }
 
-    public static NearestBooking getNearest(Booking booking) {
-        return NearestBooking.builder()
+    public static BookingDtoShort getNearest(Booking booking) {
+        return BookingDtoShort.builder()
                 .id(booking.getId())
                 .bookerId(booking.getBooker().getId())
                 .build();

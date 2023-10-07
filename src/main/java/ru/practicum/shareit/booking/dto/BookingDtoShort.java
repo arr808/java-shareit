@@ -11,7 +11,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class NearestBooking {
+public class BookingDtoShort {
         private long id;
         private long bookerId;
 }
