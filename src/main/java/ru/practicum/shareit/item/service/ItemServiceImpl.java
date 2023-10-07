@@ -51,7 +51,7 @@ public class ItemServiceImpl implements ItemService {
                 .orElseThrow(() -> new NotFoundException("item")));
         LocalDateTime today = LocalDateTime.now();
         fillByBooking(result, today, userId);
-        fillByComments(result);
+        fillByComments(result, userId);
         log.debug("Отправлен ItemDto {}", result);
         return result;
     }
@@ -71,8 +71,11 @@ public class ItemServiceImpl implements ItemService {
         List<ItemDto> result = itemRepository.findAll().stream()
                 .filter(item -> item.getOwnerId() == userId)
                 .map(ItemMapper::getDto)
-                .map(itemDto -> fillByBooking(itemDto, today, userId))
-                .map(this::fillByComments)
+                .map(itemDto -> {
+                    itemDto = fillByBooking(itemDto, today, userId);
+                    itemDto = fillByComments(itemDto, userId);
+                    return itemDto;
+                })
                 .collect(Collectors.toList());
         log.debug("Отправлен список ItemDto {}", result);
         return result;
@@ -164,11 +167,13 @@ public class ItemServiceImpl implements ItemService {
         return itemDto;
     }
 
-    private ItemDto fillByComments(ItemDto itemDto) {
-        List<CommentDto> commentsDto = commentRepository.findAllByItemId(itemDto.getId()).stream()
-                .map(CommentMapper::getDto)
-                .collect(Collectors.toList());
-        itemDto.setComments(commentsDto);
+    private ItemDto fillByComments(ItemDto itemDto, long userId) {
+        if (itemDto.getOwnerId() == userId) {
+            List<CommentDto> commentsDto = commentRepository.findAllByItemId(itemDto.getId()).stream()
+                    .map(CommentMapper::getDto)
+                    .collect(Collectors.toList());
+            itemDto.setComments(commentsDto);
+        }
         return itemDto;
     }
 }
