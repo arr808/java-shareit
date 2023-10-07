@@ -27,8 +27,11 @@ public class ItemDto {
     private String description;
     @NotNull
     private Boolean available;
+    @JsonIgnore
     private List<CommentDto> comments;
+    @JsonIgnore
     private BookingDtoShort lastBooking;
+    @JsonIgnore
     private BookingDtoShort nextBooking;
     @JsonIgnore
     private long ownerId;
