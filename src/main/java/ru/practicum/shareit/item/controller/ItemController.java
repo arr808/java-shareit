@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.shareit.item.comment.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.OwnerItemDto;
 import ru.practicum.shareit.item.service.ItemService;
 
 import javax.validation.Valid;
@@ -40,7 +39,7 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<OwnerItemDto> getAll(@RequestHeader("X-Sharer-User-Id") long userId) {
+    public List<ItemDto> getAll(@RequestHeader("X-Sharer-User-Id") long userId) {
         log.info("Получен запрос GET /items");
         return itemService.getAll(userId);
     }

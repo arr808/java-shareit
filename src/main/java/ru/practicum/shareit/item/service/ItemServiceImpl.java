@@ -15,7 +15,6 @@ import ru.practicum.shareit.item.comment.model.Comment;
 import ru.practicum.shareit.item.comment.repository.CommentRepository;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemMapper;
-import ru.practicum.shareit.item.dto.OwnerItemDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.dto.UserDto;
@@ -50,8 +49,10 @@ public class ItemServiceImpl implements ItemService {
     public ItemDto getById(long itemId, long userId) {
         ItemDto result = ItemMapper.getDto(itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("item")));
-
-        log.debug("Отправлен OwnerItemDto {}", result);
+        LocalDateTime today = LocalDateTime.now();
+        fillByBooking(result, today, userId);
+        fillByComments(result);
+        log.debug("Отправлен ItemDto {}", result);
         return result;
     }
 
@@ -64,13 +65,13 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<OwnerItemDto> getAll(long userId) {
+    public List<ItemDto> getAll(long userId) {
         userService.getById(userId);
         LocalDateTime today = LocalDateTime.now();
-        List<OwnerItemDto> result = itemRepository.findAll().stream()
+        List<ItemDto> result = itemRepository.findAll().stream()
                 .filter(item -> item.getOwnerId() == userId)
-                .map(ItemMapper::getOwnerDto)
-                .map(ownerItemDto -> fillByBooking(ownerItemDto, today, userId))
+                .map(ItemMapper::getDto)
+                .map(itemDto -> fillByBooking(itemDto, today, userId))
                 .map(this::fillByComments)
                 .collect(Collectors.toList());
         log.debug("Отправлен список ItemDto {}", result);
@@ -80,7 +81,9 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public List<ItemDto> searchByText(String text) {
         if (text.isBlank()) return new ArrayList<>();
-        List<ItemDto> result = itemRepository.searchByText(text);
+        List<ItemDto> result = itemRepository.searchByText(text).stream()
+                .map(ItemMapper::getDto)
+                .collect(Collectors.toList());
         log.debug("Отправлен список ItemDto {}", result);
         return result;
     }
@@ -146,25 +149,25 @@ public class ItemServiceImpl implements ItemService {
         log.debug("Все элементы Item удалены");
     }
 
-    private OwnerItemDto fillByBooking(OwnerItemDto ownerItemDto, LocalDateTime today, long userId) {
-        if (ownerItemDto.getOwnerId() == userId) {
-            long itemId = ownerItemDto.getId();
+    private ItemDto fillByBooking(ItemDto itemDto, LocalDateTime today, long userId) {
+        if (itemDto.getOwnerId() == userId) {
+            long itemId = itemDto.getId();
 
             Booking nextBooking = bookingRepository
                     .findFirstByItemIdAndStartAfterAndStateNotOrderByStartAsc(itemId, today, BookingState.REJECTED);
             Booking lastBooking = bookingRepository
                     .findFirstByItemIdAndStartBeforeAndStateNotOrderByEndDesc(itemId, today, BookingState.REJECTED);
 
-            if (nextBooking != null) ownerItemDto.setNextBooking(BookingMapper.getNearest(nextBooking));
-            if (lastBooking != null) ownerItemDto.setLastBooking(BookingMapper.getNearest(lastBooking));
+            if (nextBooking != null) itemDto.setNextBooking(BookingMapper.getNearest(nextBooking));
+            if (lastBooking != null) itemDto.setLastBooking(BookingMapper.getNearest(lastBooking));
         }
-        return ownerItemDto;
+        return itemDto;
     }
 
-    private OwnerItemDto fillByComments(OwnerItemDto ownerItemDto) {
-        ownerItemDto.setComments(commentRepository.findAllByItemId(ownerItemDto.getId()).stream()
+    private ItemDto fillByComments(ItemDto itemDto) {
+        itemDto.setComments(commentRepository.findAllByItemId(itemDto.getId()).stream()
                 .map(CommentMapper::getDto)
                 .collect(Collectors.toList()));
-        return ownerItemDto;
+        return itemDto;
     }
 }

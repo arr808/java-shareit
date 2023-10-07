@@ -15,16 +15,6 @@ public class ItemMapper {
                 .build();
     }
 
-    public static OwnerItemDto getOwnerDto(Item item) {
-        return OwnerItemDto.builder()
-                .id(item.getId())
-                .name(item.getName())
-                .description(item.getDescription())
-                .available(item.getAvailable())
-                .ownerId(item.getOwnerId())
-                .build();
-    }
-
     public static Item getModel(ItemDto itemDto, long ownerId) {
         return Item.builder()
                 .id(itemDto.getId())
