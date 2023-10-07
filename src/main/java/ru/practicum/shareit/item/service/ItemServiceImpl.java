@@ -49,7 +49,8 @@ public class ItemServiceImpl implements ItemService {
     public ItemDto getById(long itemId, long userId) {
         ItemDto result = ItemMapper.getDto(itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("item")));
-
+        LocalDateTime today = LocalDateTime.now();
+        fillByBooking(result, today, userId);
         log.debug("Отправлен ItemDto {}", result);
         return result;
     }
