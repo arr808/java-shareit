@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS items (
   description VARCHAR(512) NOT NULL,
   owner_id BIGINT NOT NULL,
   available BOOLEAN NOT NULL,
-  CONSTRAINT fk_item_user FOREIGN KEY (owner_id) REFERENCES users ON DELETE CASCADE
+  CONSTRAINT fk_item_user FOREIGN KEY (owner_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
 CREATE TYPE booking_state as enum ('WAITING', 'APPROVED', 'REJECTED', 'CANCELED');
@@ -28,8 +28,8 @@ CREATE TABLE IF NOT EXISTS bookings (
   item_id BIGINT NOT NULL,
   booker_id BIGINT NOT NULL,
   state booking_state NOT NULL,
-  CONSTRAINT fk_booking_item FOREIGN KEY (item_id) REFERENCES items ON DELETE CASCADE,
-  CONSTRAINT fk_booking_user FOREIGN KEY (booker_id) REFERENCES users ON DELETE CASCADE
+  CONSTRAINT fk_booking_item FOREIGN KEY (item_id) REFERENCES items (id) ON DELETE CASCADE,
+  CONSTRAINT fk_booking_user FOREIGN KEY (booker_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS comments (
@@ -38,6 +38,6 @@ CREATE TABLE IF NOT EXISTS comments (
   item_id BIGINT NOT NULL,
   author_id BIGINT NOT NULL,
   created TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-  CONSTRAINT fk_comment_item FOREIGN KEY (item_id) REFERENCES items ON DELETE CASCADE,
-  CONSTRAINT fk_comment_user FOREIGN KEY (author_id) REFERENCES users ON DELETE CASCADE
+  CONSTRAINT fk_comment_item FOREIGN KEY (item_id) REFERENCES items (id) ON DELETE CASCADE,
+  CONSTRAINT fk_comment_user FOREIGN KEY (author_id) REFERENCES users (id) ON DELETE CASCADE
 );
