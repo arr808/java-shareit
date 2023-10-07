@@ -37,7 +37,7 @@ public class Comment {
     @JoinColumn(name = "item_id", referencedColumnName = "id")
     private Item item;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "booker_id", referencedColumnName = "id")
+    @JoinColumn(name = "author_id", referencedColumnName = "id")
     private User author;
     @Column(nullable = false)
     private LocalDateTime created;
