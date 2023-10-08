@@ -30,24 +30,16 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto getById(long id) {
-        UserDto result = UserMapper.getDto(userRepository.findById(id)
+        UserDto result = UserMapper.toDto(userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("user")));
         log.debug("Отправлен UserDto {}", result);
         return result;
     }
 
     @Override
-    public User findById(long id) {
-        User result = userRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("user"));
-        log.debug("Отправлен User {}", result);
-        return result;
-    }
-
-    @Override
     public List<UserDto> getAll() {
         List<UserDto> result = userRepository.findAll().stream()
-                .map(UserMapper::getDto)
+                .map(UserMapper::toDto)
                 .collect(Collectors.toList());
         log.debug("Отправлен список UserDto {}", result);
         return result;
@@ -56,8 +48,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto add(UserDto userDto) {
         validation(userDto);
-        User user = UserMapper.getModel(userDto);
-        UserDto result = UserMapper.getDto(userRepository.save(user));
+        User user = UserMapper.fromDto(userDto);
+        UserDto result = UserMapper.toDto(userRepository.save(user));
         log.debug("Отправлен UserDto {}", result);
         return result;
     }
@@ -66,13 +58,13 @@ public class UserServiceImpl implements UserService {
     public UserDto update(long id, UserDto userDto) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("user"));
-        User updatingUser = UserMapper.getModel(userDto);
+        User updatingUser = UserMapper.fromDto(userDto);
         updatingUser.setId(id);
 
         if (updatingUser.getName() == null) updatingUser.setName(user.getName());
         if (updatingUser.getEmail() == null) updatingUser.setEmail(user.getEmail());
 
-        UserDto result = UserMapper.getDto(userRepository.save(updatingUser));
+        UserDto result = UserMapper.toDto(userRepository.save(updatingUser));
         log.debug("Отправлен UserDto {}", result);
         return result;
     }
@@ -102,7 +94,7 @@ public class UserServiceImpl implements UserService {
 
     private void deleteAllItemsFromUser(long userId) {
         for (Item item : itemRepository.findAll()) {
-            if (item.getOwnerId() == userId) itemRepository.deleteById(item.getId());
+            if (item.getOwner().getId() == userId) itemRepository.deleteById(item.getId());
         }
         log.debug("У User id = {} удалены все Item", userId);
     }

@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
 
@@ -24,8 +25,9 @@ public class Item {
     private String name;
     @Column(length = 512, nullable = false)
     private String description;
-    @Column(name = "owner_id", nullable = false)
-    private long ownerId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id", referencedColumnName = "id", nullable = false)
+    private User owner;
     @Column(nullable = false)
     private Boolean available;
 }

@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS items (
   description VARCHAR(512) NOT NULL,
   owner_id BIGINT NOT NULL,
   available BOOLEAN NOT NULL,
+  CONSTRAINT UQ_OWNER_ITEM_NAME UNIQUE(owner_id, name),
   CONSTRAINT fk_item_user FOREIGN KEY (owner_id) REFERENCES users (id) ON DELETE CASCADE
 );
 

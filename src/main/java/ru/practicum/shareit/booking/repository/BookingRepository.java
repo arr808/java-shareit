@@ -3,7 +3,7 @@ package ru.practicum.shareit.booking.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.booking.model.BookingState;
+import ru.practicum.shareit.booking.model.BookingStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,12 +16,12 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             "join fetch b.item as i " +
             "where b.id = ?1 " +
             "and (b.booker.id = ?2 " +
-            "or i.ownerId = ?2)")
+            "or i.owner.id = ?2)")
     Optional<Booking> getBookingById(long bookingId, long userId);
 
     List<Booking> findAllByBookerIdOrderByStartDesc(long bookerId); //state ALL
 
-    List<Booking> findAllByBookerIdAndStateOrderByStartDesc(long bookerId, BookingState state); //state WAITING or REJECTED
+    List<Booking> findAllByBookerIdAndStateOrderByStartDesc(long bookerId, BookingStatus state); //state WAITING or REJECTED
 
     List<Booking> findAllByBookerIdAndStartIsBeforeAndEndIsAfterOrderByStartDesc(long bookerId,
                                                                                    LocalDateTime startTime,
@@ -38,7 +38,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     List<Booking> findAllByItemOwnerIdOrderByStartDesc(long ownerId); //state ALL
 
-    List<Booking> findAllByItemOwnerIdAndStateOrderByStartDesc(long ownerId, BookingState state); //state WAITING or REJECTED
+    List<Booking> findAllByItemOwnerIdAndStateOrderByStartDesc(long ownerId, BookingStatus state); //state WAITING or REJECTED
 
     List<Booking> findAllByItemOwnerIdAndStartIsBeforeAndEndIsAfterOrderByStartDesc(long ownerId,
                                                                                       LocalDateTime startTime,
@@ -51,12 +51,12 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findAllByItemOwnerIdAndStartIsAfterOrderByStartDesc(long ownerId,
                                                                          LocalDateTime startTime); //state FUTURE
 
-    Booking findFirstByItemIdAndStartAfterAndStateNotOrderByStartAsc(long itemId, LocalDateTime now, BookingState state);
+    Booking findFirstByItemIdAndStartAfterAndStateNotOrderByStartAsc(long itemId, LocalDateTime now, BookingStatus state);
 
-    Booking findFirstByItemIdAndStartBeforeAndStateNotOrderByEndDesc(long itemId, LocalDateTime now, BookingState state);
+    Booking findFirstByItemIdAndStartBeforeAndStateNotOrderByEndDesc(long itemId, LocalDateTime now, BookingStatus state);
 
     Optional<Booking> findFirstByItemIdAndBookerIdAndStateAndEndIsBefore(long itemId,
                                                                          long bookerId,
-                                                                         BookingState state,
+                                                                         BookingStatus state,
                                                                          LocalDateTime now);
 }

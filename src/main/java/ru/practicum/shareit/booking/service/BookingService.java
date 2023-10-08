@@ -1,6 +1,6 @@
 package ru.practicum.shareit.booking.service;
 
-import ru.practicum.shareit.booking.controller.RequestState;
+import ru.practicum.shareit.booking.controller.BookingState;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingRequestDto;
 
@@ -10,11 +10,11 @@ public interface BookingService {
 
     BookingDto getBookingById(long bookingId, long userId);
 
-    List<BookingDto> getAllBookingsByBooker(long bookerId, RequestState state);
+    List<BookingDto> getAllBookingsByBooker(long bookerId, BookingState state);
 
-    List<BookingDto> getAllBookingsByOwner(long ownerId, RequestState state);
+    List<BookingDto> getAllBookingsByOwner(long ownerId, BookingState state);
 
     BookingDto addBooking(BookingRequestDto bookingRequestDto, long bookerId);
 
-    BookingDto bookingReview(long bookingId, long ownerId, boolean approved);
+    BookingDto setBookingApprove(long bookingId, long ownerId, boolean approved);
 }

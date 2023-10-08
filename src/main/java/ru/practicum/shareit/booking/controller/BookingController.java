@@ -40,26 +40,26 @@ public class BookingController {
     public List<BookingDto> getAllBookingsByBooker(@RequestParam(defaultValue = "ALL") String state,
                                                    @RequestHeader("X-Sharer-User-Id") long bookerId) {
         log.info("Получен запрос GET /bookings?state={}", state);
-        RequestState requestState;
+        BookingState bookingState;
         try {
-            requestState = RequestState.valueOf(state);
+            bookingState = BookingState.valueOf(state);
         } catch (IllegalArgumentException e) {
-            requestState = RequestState.UNSUPPORTED_STATUS;
+            bookingState = BookingState.UNSUPPORTED_STATUS;
         }
-        return bookingService.getAllBookingsByBooker(bookerId, requestState);
+        return bookingService.getAllBookingsByBooker(bookerId, bookingState);
     }
 
     @GetMapping("/owner")
     public List<BookingDto> getAllBookingsByOwner(@RequestParam(defaultValue = "ALL") String state,
                                                   @RequestHeader("X-Sharer-User-Id") long ownerId) {
         log.info("Получен запрос GET /bookings/owner?state={}", state);
-        RequestState requestState;
+        BookingState bookingState;
         try {
-            requestState = RequestState.valueOf(state);
+            bookingState = BookingState.valueOf(state);
         } catch (IllegalArgumentException e) {
-            requestState = RequestState.UNSUPPORTED_STATUS;
+            bookingState = BookingState.UNSUPPORTED_STATUS;
         }
-        return bookingService.getAllBookingsByOwner(ownerId, requestState);
+        return bookingService.getAllBookingsByOwner(ownerId, bookingState);
     }
 
     @PostMapping
@@ -74,6 +74,6 @@ public class BookingController {
                                     @RequestParam boolean approved,
                                     @RequestHeader("X-Sharer-User-Id") long ownerId) {
         log.info("Получен запрос PATCH /bookings/{}?approved={}", bookingId, approved);
-        return bookingService.bookingReview(bookingId, ownerId, approved);
+        return bookingService.setBookingApprove(bookingId, ownerId, approved);
     }
 }

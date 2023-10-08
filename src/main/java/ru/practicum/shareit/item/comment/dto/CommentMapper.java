@@ -7,7 +7,7 @@ import ru.practicum.shareit.item.model.Item;
 @UtilityClass
 public class CommentMapper {
 
-    public static CommentDto getDto(Comment comment) {
+    public static CommentDto toDto(Comment comment) {
         return CommentDto.builder()
                 .id(comment.getId())
                 .text(comment.getText())
@@ -16,7 +16,7 @@ public class CommentMapper {
                 .build();
     }
 
-    public static Comment getModel(CommentDto commentDto, long itemId) {
+    public static Comment fromDto(CommentDto commentDto, long itemId) {
         return Comment.builder()
                 .item(Item.builder().id(itemId).build())
                 .text(commentDto.getText())
