@@ -14,6 +14,8 @@ import ru.practicum.shareit.item.comment.repository.CommentRepository;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.request.model.ItemRequest;
+import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
@@ -32,16 +34,19 @@ public class ItemServiceImpl implements ItemService {
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
+    private final ItemRequestRepository itemRequestRepository;
 
     @Autowired
     public ItemServiceImpl(ItemRepository itemRepository,
                            UserRepository userRepository,
                            BookingRepository bookingRepository,
-                           CommentRepository commentRepository) {
+                           CommentRepository commentRepository,
+                           ItemRequestRepository itemRequestRepository) {
         this.itemRepository = itemRepository;
         this.userRepository = userRepository;
         this.bookingRepository = bookingRepository;
         this.commentRepository = commentRepository;
+        this.itemRequestRepository = itemRequestRepository;
     }
 
     @Override
@@ -83,8 +88,10 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public ItemDto add(ItemDto itemDto, long userId) {
         User user = checkUser(userId);
-        Item item = itemRepository.save(Mapper.fromDto(itemDto, user));
-        ItemDto result = Mapper.toDto(item);
+        ItemRequest itemRequest = itemRequestRepository.findById(itemDto.getRequestId()).orElse(null);
+        Item item = Mapper.fromDto(itemDto, user);
+        if (itemRequest != null) item.setItemRequest(itemRequest);
+        ItemDto result = Mapper.toDto(itemRepository.save(item));
         log.debug("Отправлен ItemDto {}", result);
         return result;
     }

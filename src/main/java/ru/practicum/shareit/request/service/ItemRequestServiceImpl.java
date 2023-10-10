@@ -1,8 +1,10 @@
 package ru.practicum.shareit.request.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dto.ItemForRequestDto;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
@@ -17,6 +19,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class ItemRequestServiceImpl implements ItemRequestService {
 
@@ -37,25 +40,34 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     public List<ItemRequestDto> getAllByUser(long userId) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("user"));
-        return itemRequestRepository.findAllByRequesterIdOrderByCreationDesc(userId).stream()
+        List<ItemRequestDto> result = itemRequestRepository.findAllByRequesterIdOrderByCreationDesc(userId).stream()
                 .map(Mapper::toDto)
-                .peek(this::fillByItemResponse)
+                .peek(this::fillByItems)
                 .collect(Collectors.toList());
+        log.debug("Отправлен список ItemRequestDto {}", result);
+        return result;
     }
 
     @Override
-    public List<ItemRequestDto> getAll(int from, int size) {
-        return itemRequestRepository.findAll().stream()
+    public List<ItemRequestDto> getAll(long userId, int from, int size) { // Добавить пользователя
+        if (from < 0 || size <= 0) throw new ValidationException("pagination params");
+        List<ItemRequestDto> result = itemRequestRepository.findAllByRequesterIdNotOrderByCreationDesc(userId).stream()
                 .map(Mapper::toDto)
+                .peek(this::fillByItems)
                 .collect(Collectors.toList());
+        log.debug("Отправлен список ItemRequestDto {}", result);
+        return result;
     }
 
     @Override
-    public ItemRequestDto getById(long requestId) {
-        ItemRequestDto itemRequestDto = Mapper.toDto(itemRequestRepository.findById(requestId)
+    public ItemRequestDto getById(long userId, long requestId) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("user"));
+        ItemRequestDto result = Mapper.toDto(itemRequestRepository.findById(requestId)
                 .orElseThrow(() -> new NotFoundException("request")));
-        fillByItemResponse(itemRequestDto);
-        return itemRequestDto;
+        fillByItems(result);
+        log.debug("Отправлен ItemRequestDto {}", result);
+        return result;
     }
 
     @Override
@@ -64,13 +76,15 @@ public class ItemRequestServiceImpl implements ItemRequestService {
                 .orElseThrow(() -> new NotFoundException("user"));
         LocalDateTime timestamp = LocalDateTime.now();
         ItemRequest itemRequest = itemRequestRepository.save(Mapper.fromShortDto(requester, itemRequestShortDto, timestamp));
-        return Mapper.toDto(itemRequest);
+        ItemRequestDto result = Mapper.toDto(itemRequest);
+        log.debug("Отправлен ItemRequestDto {}", result);
+        return result;
     }
 
-    private void fillByItemResponse(ItemRequestDto itemRequestDto) {
-        List<ItemForRequestDto> itemResponses = itemRepository.findAllByItemRequestId(itemRequestDto.getId()).stream()
+    private void fillByItems(ItemRequestDto itemRequestDto) {
+        List<ItemForRequestDto> items = itemRepository.findAllByItemRequestId(itemRequestDto.getId()).stream()
                 .map(Mapper::toItemForRequestDto)
                 .collect(Collectors.toList());
-        itemRequestDto.setResponses(itemResponses);
+        itemRequestDto.setItems(items);
     }
 }

@@ -41,13 +41,15 @@ public class Mapper {
 
     //Item
     public static ItemDto toDto(Item item) {
-        return ItemDto.builder()
+        ItemDto itemDto = ItemDto.builder()
                 .id(item.getId())
                 .name(item.getName())
                 .description(item.getDescription())
                 .available(item.getAvailable())
                 .ownerId(item.getOwner().getId())
                 .build();
+        if (item.getItemRequest() != null) itemDto.setRequestId(item.getItemRequest().getId());
+        return itemDto;
     }
 
     public static ItemForRequestDto toItemForRequestDto(Item item) {
@@ -121,6 +123,7 @@ public class Mapper {
         return ItemRequestDto.builder()
                 .id(itemRequest.getId())
                 .description(itemRequest.getDescription())
+                .created(itemRequest.getCreation())
                 .build();
     }
 
