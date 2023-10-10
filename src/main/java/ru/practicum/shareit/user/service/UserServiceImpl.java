@@ -8,9 +8,9 @@ import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.dto.UserMapper;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.util.Mapper;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,7 +30,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto getById(long id) {
-        UserDto result = UserMapper.toDto(userRepository.findById(id)
+        UserDto result = Mapper.toDto(userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("user")));
         log.debug("Отправлен UserDto {}", result);
         return result;
@@ -39,7 +39,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserDto> getAll() {
         List<UserDto> result = userRepository.findAll().stream()
-                .map(UserMapper::toDto)
+                .map(Mapper::toDto)
                 .collect(Collectors.toList());
         log.debug("Отправлен список UserDto {}", result);
         return result;
@@ -48,8 +48,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto add(UserDto userDto) {
         validation(userDto);
-        User user = UserMapper.fromDto(userDto);
-        UserDto result = UserMapper.toDto(userRepository.save(user));
+        User user = Mapper.fromDto(userDto);
+        UserDto result = Mapper.toDto(userRepository.save(user));
         log.debug("Отправлен UserDto {}", result);
         return result;
     }
@@ -58,13 +58,13 @@ public class UserServiceImpl implements UserService {
     public UserDto update(long id, UserDto userDto) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("user"));
-        User updatingUser = UserMapper.fromDto(userDto);
+        User updatingUser = Mapper.fromDto(userDto);
         updatingUser.setId(id);
 
         if (updatingUser.getName() == null) updatingUser.setName(user.getName());
         if (updatingUser.getEmail() == null) updatingUser.setEmail(user.getEmail());
 
-        UserDto result = UserMapper.toDto(userRepository.save(updatingUser));
+        UserDto result = Mapper.toDto(userRepository.save(updatingUser));
         log.debug("Отправлен UserDto {}", result);
         return result;
     }

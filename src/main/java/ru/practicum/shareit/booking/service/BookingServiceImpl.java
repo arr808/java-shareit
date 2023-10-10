@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.controller.BookingState;
 import ru.practicum.shareit.booking.dto.BookingDto;
-import ru.practicum.shareit.booking.dto.BookingMapper;
 import ru.practicum.shareit.booking.dto.BookingRequestDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
@@ -18,6 +17,7 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.util.Mapper;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -41,7 +41,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public BookingDto getBookingById(long bookingId, long userId) {
         checkUser(userId);
-        BookingDto result = BookingMapper.toDto(bookingRepository.getBookingById(bookingId, userId)
+        BookingDto result = Mapper.toDto(bookingRepository.getBookingById(bookingId, userId)
                 .orElseThrow(() -> new NotFoundException("booking")));
         log.debug("Отправлен BookingDto {}", result);
         return result;
@@ -78,7 +78,7 @@ public class BookingServiceImpl implements BookingService {
         }
         log.debug("Отправлен список Booking {}", bookings);
         return bookings.stream()
-                .map(BookingMapper::toDto)
+                .map(Mapper::toDto)
                 .collect(Collectors.toList());
     }
 
@@ -113,7 +113,7 @@ public class BookingServiceImpl implements BookingService {
         }
         log.debug("Отправлен список Booking {}", bookings);
         return bookings.stream()
-                .map(BookingMapper::toDto)
+                .map(Mapper::toDto)
                 .collect(Collectors.toList());
     }
 
@@ -125,9 +125,9 @@ public class BookingServiceImpl implements BookingService {
 
         validation(bookingRequestDto, item, bookerId);
 
-        Booking booking = BookingMapper.fromRequestDto(bookingRequestDto, booker, item);
+        Booking booking = Mapper.fromRequestDto(bookingRequestDto, booker, item);
         log.debug("Добавлен новый Booking {}", booking);
-        return BookingMapper.toDto(bookingRepository.save(booking));
+        return Mapper.toDto(bookingRepository.save(booking));
     }
 
     @Override
@@ -142,7 +142,7 @@ public class BookingServiceImpl implements BookingService {
             booking.setState(BookingStatus.APPROVED);
         } else booking.setState(BookingStatus.REJECTED);
         log.debug("Статус Booking {} обновлен", booking);
-        return BookingMapper.toDto(bookingRepository.save(booking));
+        return Mapper.toDto(bookingRepository.save(booking));
     }
 
     private void validation(BookingRequestDto bookingRequestDto, Item item, long bookerId) {
