@@ -39,15 +39,19 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemDto> getAll(@RequestHeader("X-Sharer-User-Id") long userId) {
+    public List<ItemDto> getAll(@RequestHeader("X-Sharer-User-Id") long userId,
+                                @RequestParam(defaultValue = "0") int from,
+                                @RequestParam(defaultValue = "20") int size) {
         log.info("Получен запрос GET /items");
-        return itemService.getAll(userId);
+        return itemService.getAll(userId, from, size);
     }
 
     @GetMapping("/search")
-    public List<ItemDto> searchByName(@RequestParam String text) {
+    public List<ItemDto> searchByText(@RequestParam String text,
+                                      @RequestParam(defaultValue = "0") int from,
+                                      @RequestParam(defaultValue = "20") int size) {
         log.info("Получен запрос GET /items/search?text={}", text);
-        return itemService.searchByText(text.toLowerCase());
+        return itemService.searchByText(text.toLowerCase(), from, size);
     }
 
     @PostMapping

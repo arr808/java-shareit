@@ -2,9 +2,9 @@ package ru.practicum.shareit.request.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dto.ItemForRequestDto;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
@@ -14,6 +14,7 @@ import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 import ru.practicum.shareit.util.Mapper;
+import ru.practicum.shareit.util.PaginationAndSortParams;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -49,9 +50,9 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     }
 
     @Override
-    public List<ItemRequestDto> getAll(long userId, int from, int size) { // Добавить пользователя
-        if (from < 0 || size <= 0) throw new ValidationException("pagination params");
-        List<ItemRequestDto> result = itemRequestRepository.findAllByRequesterIdNotOrderByCreationDesc(userId).stream()
+    public List<ItemRequestDto> getAll(long userId, int from, int size) {
+        Pageable pageRequest = PaginationAndSortParams.getPageableDesc(from, size, "creation");
+        List<ItemRequestDto> result = itemRequestRepository.findAllByRequesterIdNot(userId, pageRequest).stream()
                 .map(Mapper::toDto)
                 .peek(this::fillByItems)
                 .collect(Collectors.toList());

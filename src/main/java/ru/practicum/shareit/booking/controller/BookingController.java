@@ -38,7 +38,9 @@ public class BookingController {
 
     @GetMapping
     public List<BookingDto> getAllBookingsByBooker(@RequestParam(defaultValue = "ALL") String state,
-                                                   @RequestHeader("X-Sharer-User-Id") long bookerId) {
+                                                   @RequestHeader("X-Sharer-User-Id") long bookerId,
+                                                   @RequestParam(defaultValue = "0") int from,
+                                                   @RequestParam(defaultValue = "20") int size) {
         log.info("Получен запрос GET /bookings?state={}", state);
         BookingState bookingState;
         try {
@@ -46,12 +48,14 @@ public class BookingController {
         } catch (IllegalArgumentException e) {
             bookingState = BookingState.UNSUPPORTED_STATUS;
         }
-        return bookingService.getAllBookingsByBooker(bookerId, bookingState);
+        return bookingService.getAllBookingsByBooker(bookerId, bookingState, from ,size);
     }
 
     @GetMapping("/owner")
     public List<BookingDto> getAllBookingsByOwner(@RequestParam(defaultValue = "ALL") String state,
-                                                  @RequestHeader("X-Sharer-User-Id") long ownerId) {
+                                                  @RequestHeader("X-Sharer-User-Id") long ownerId,
+                                                  @RequestParam(defaultValue = "0") int from,
+                                                  @RequestParam(defaultValue = "20") int size) {
         log.info("Получен запрос GET /bookings/owner?state={}", state);
         BookingState bookingState;
         try {
@@ -59,7 +63,7 @@ public class BookingController {
         } catch (IllegalArgumentException e) {
             bookingState = BookingState.UNSUPPORTED_STATUS;
         }
-        return bookingService.getAllBookingsByOwner(ownerId, bookingState);
+        return bookingService.getAllBookingsByOwner(ownerId, bookingState, from, size);
     }
 
     @PostMapping

@@ -2,6 +2,7 @@ package ru.practicum.shareit.item.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
@@ -20,6 +21,7 @@ import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 import ru.practicum.shareit.util.Mapper;
+import ru.practicum.shareit.util.PaginationAndSortParams;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -53,21 +55,22 @@ public class ItemServiceImpl implements ItemService {
     public ItemDto getById(long itemId, long userId) {
         ItemDto result = Mapper.toDto(itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("item")));
-        LocalDateTime today = LocalDateTime.now();
-        fillByBooking(result, today, userId);
+        LocalDateTime timestamp = LocalDateTime.now();
+        fillByBooking(result, timestamp, userId);
         fillByComments(result, userId);
         log.debug("Отправлен ItemDto {}", result);
         return result;
     }
 
     @Override
-    public List<ItemDto> getAll(long userId) {
+    public List<ItemDto> getAll(long userId, int from, int size) {
         checkUser(userId);
-        LocalDateTime today = LocalDateTime.now();
-        List<ItemDto> result = itemRepository.findAllByOwnerId(userId).stream()
+        Pageable pageRequest = PaginationAndSortParams.getPageable(from, size);
+        LocalDateTime timestamp = LocalDateTime.now();
+        List<ItemDto> result = itemRepository.findAllByOwnerId(userId, pageRequest).stream()
                 .map(Mapper::toDto)
                 .peek(itemDto -> {
-                    fillByBooking(itemDto, today, userId);
+                    fillByBooking(itemDto, timestamp, userId);
                     fillByComments(itemDto, userId);
                 })
                 .collect(Collectors.toList());
@@ -76,9 +79,10 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> searchByText(String text) {
+    public List<ItemDto> searchByText(String text, int from, int size) {
+        Pageable pageRequest = PaginationAndSortParams.getPageable(from, size);
         if (text.isBlank()) return new ArrayList<>();
-        List<ItemDto> result = itemRepository.searchByText(text).stream()
+        List<ItemDto> result = itemRepository.searchByText(text, pageRequest).stream()
                 .map(Mapper::toDto)
                 .collect(Collectors.toList());
         log.debug("Отправлен список ItemDto {}", result);
@@ -98,12 +102,12 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public CommentDto addComment(long itemId, long userId, CommentDto commentDto) {
-        LocalDateTime today = LocalDateTime.now();
-        bookingRepository.findFirstByItemIdAndBookerIdAndStateAndEndIsBefore(itemId, userId, BookingStatus.APPROVED, today)
+        LocalDateTime timestamp = LocalDateTime.now();
+        bookingRepository.findFirstByItemIdAndBookerIdAndStateAndEndIsBefore(itemId, userId, BookingStatus.APPROVED, timestamp)
                 .orElseThrow(() -> new ValidationException("userId"));
         Comment comment = Mapper.fromDto(commentDto, itemId);
         comment.setAuthor(checkUser(userId));
-        comment.setCreated(today);
+        comment.setCreated(timestamp);
         log.debug("Добавлен Comment {}", comment);
         return Mapper.toDto(commentRepository.save(comment));
     }
@@ -148,14 +152,14 @@ public class ItemServiceImpl implements ItemService {
         log.debug("Все элементы Item удалены");
     }
 
-    private void fillByBooking(ItemDto itemDto, LocalDateTime today, long userId) {
+    private void fillByBooking(ItemDto itemDto, LocalDateTime timestamp, long userId) {
         if (itemDto.getOwnerId() == userId) {
             long itemId = itemDto.getId();
 
             Booking nextBooking = bookingRepository
-                    .findFirstByItemIdAndStartAfterAndStateNotOrderByStartAsc(itemId, today, BookingStatus.REJECTED);
+                    .findFirstByItemIdAndStartAfterAndStateNotOrderByStartAsc(itemId, timestamp, BookingStatus.REJECTED);
             Booking lastBooking = bookingRepository
-                    .findFirstByItemIdAndStartBeforeAndStateNotOrderByEndDesc(itemId, today, BookingStatus.REJECTED);
+                    .findFirstByItemIdAndStartBeforeAndStateNotOrderByEndDesc(itemId, timestamp, BookingStatus.REJECTED);
 
             if (nextBooking != null) itemDto.setNextBooking(Mapper.toShortDto(nextBooking));
             if (lastBooking != null) itemDto.setLastBooking(Mapper.toShortDto(lastBooking));
