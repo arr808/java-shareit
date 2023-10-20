@@ -48,7 +48,7 @@ public class BookingController {
         } catch (IllegalArgumentException e) {
             bookingState = BookingState.UNSUPPORTED_STATUS;
         }
-        return bookingService.getAllBookingsByBooker(bookerId, bookingState, from ,size);
+        return bookingService.getAllBookingsByBooker(bookerId, bookingState, from, size);
     }
 
     @GetMapping("/owner")
@@ -70,7 +70,7 @@ public class BookingController {
     public BookingDto addBooking(@RequestBody BookingRequestDto bookingRequestDto,
                       @RequestHeader("X-Sharer-User-Id") long bookerId) {
         log.info("Получен запрос POST /bookings");
-        return bookingService.addBooking(bookingRequestDto, bookerId);
+        return bookingService.add(bookingRequestDto, bookerId);
     }
 
     @PatchMapping("/{bookingId}")

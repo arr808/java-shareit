@@ -14,7 +14,7 @@ public interface BookingService {
 
     List<BookingDto> getAllBookingsByOwner(long ownerId, BookingState state, int from, int size);
 
-    BookingDto addBooking(BookingRequestDto bookingRequestDto, long bookerId);
+    BookingDto add(BookingRequestDto bookingRequestDto, long bookerId);
 
     BookingDto setBookingApprove(long bookingId, long ownerId, boolean approved);
 }

@@ -120,7 +120,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public BookingDto addBooking(BookingRequestDto bookingRequestDto, long bookerId) {
+    public BookingDto add(BookingRequestDto bookingRequestDto, long bookerId) {
         User booker = checkUser(bookerId);
         Item item = itemRepository.findById(bookingRequestDto.getItemId())
                         .orElseThrow(() -> new NotFoundException("item"));
