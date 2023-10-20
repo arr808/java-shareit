@@ -119,7 +119,7 @@ public class Mapper {
     }
 
     //ItemRequest
-    public static ItemRequestDto toDto (ItemRequest itemRequest) {
+    public static ItemRequestDto toDto(ItemRequest itemRequest) {
         return ItemRequestDto.builder()
                 .id(itemRequest.getId())
                 .description(itemRequest.getDescription())

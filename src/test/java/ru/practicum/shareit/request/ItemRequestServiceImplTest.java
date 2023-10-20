@@ -100,7 +100,7 @@ public class ItemRequestServiceImplTest {
         when(itemRequestRepository.findAllByRequesterIdNot(requesterId, pageRequest))
                 .thenReturn(List.of(itemRequest));
 
-        Assertions.assertEquals(List.of(itemRequestDto), itemRequestService.getAll(requesterId, 0 ,1));
+        Assertions.assertEquals(List.of(itemRequestDto), itemRequestService.getAll(requesterId, 0, 1));
     }
 
     @Test
