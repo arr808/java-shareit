@@ -2,25 +2,27 @@ package ru.practicum.shareit.item.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.booking.dto.BookingMapper;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.comment.dto.CommentDto;
-import ru.practicum.shareit.item.comment.dto.CommentMapper;
 import ru.practicum.shareit.item.comment.model.Comment;
 import ru.practicum.shareit.item.comment.repository.CommentRepository;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.request.model.ItemRequest;
+import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.dto.UserMapper;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.util.Mapper;
+import ru.practicum.shareit.util.PaginationAndSortParams;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -35,37 +37,43 @@ public class ItemServiceImpl implements ItemService {
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
+    private final ItemRequestRepository itemRequestRepository;
 
     @Autowired
     public ItemServiceImpl(ItemRepository itemRepository,
                            UserRepository userRepository,
                            BookingRepository bookingRepository,
-                           CommentRepository commentRepository) {
+                           CommentRepository commentRepository,
+                           ItemRequestRepository itemRequestRepository) {
         this.itemRepository = itemRepository;
         this.userRepository = userRepository;
         this.bookingRepository = bookingRepository;
         this.commentRepository = commentRepository;
+        this.itemRequestRepository = itemRequestRepository;
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ItemDto getById(long itemId, long userId) {
-        ItemDto result = ItemMapper.toDto(itemRepository.findById(itemId)
+        ItemDto result = Mapper.toDto(itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("item")));
-        LocalDateTime today = LocalDateTime.now();
-        fillByBooking(result, today, userId);
+        LocalDateTime timestamp = LocalDateTime.now();
+        fillByBooking(result, timestamp, userId);
         fillByComments(result, userId);
         log.debug("Отправлен ItemDto {}", result);
         return result;
     }
 
     @Override
-    public List<ItemDto> getAll(long userId) {
+    @Transactional(readOnly = true)
+    public List<ItemDto> getAll(long userId, int from, int size) {
         checkUser(userId);
-        LocalDateTime today = LocalDateTime.now();
-        List<ItemDto> result = itemRepository.findAllByOwnerId(userId).stream()
-                .map(ItemMapper::toDto)
+        Pageable pageRequest = PaginationAndSortParams.getPageable(from, size);
+        LocalDateTime timestamp = LocalDateTime.now();
+        List<ItemDto> result = itemRepository.findAllByOwnerId(userId, pageRequest).stream()
+                .map(Mapper::toDto)
                 .peek(itemDto -> {
-                    fillByBooking(itemDto, today, userId);
+                    fillByBooking(itemDto, timestamp, userId);
                     fillByComments(itemDto, userId);
                 })
                 .collect(Collectors.toList());
@@ -74,51 +82,58 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> searchByText(String text) {
+    @Transactional(readOnly = true)
+    public List<ItemDto> searchByText(String text, int from, int size) {
+        Pageable pageRequest = PaginationAndSortParams.getPageable(from, size);
         if (text.isBlank()) return new ArrayList<>();
-        List<ItemDto> result = itemRepository.searchByText(text).stream()
-                .map(ItemMapper::toDto)
+        List<ItemDto> result = itemRepository.searchByText(text, pageRequest).stream()
+                .map(Mapper::toDto)
                 .collect(Collectors.toList());
         log.debug("Отправлен список ItemDto {}", result);
         return result;
     }
 
     @Override
+    @Transactional
     public ItemDto add(ItemDto itemDto, long userId) {
         User user = checkUser(userId);
-        Item item = itemRepository.save(ItemMapper.fromDto(itemDto, user));
-        ItemDto result = ItemMapper.toDto(item);
+        ItemRequest itemRequest = itemRequestRepository.findById(itemDto.getRequestId()).orElse(null);
+        Item item = Mapper.fromDto(itemDto, user);
+        if (itemRequest != null) item.setItemRequest(itemRequest);
+        ItemDto result = Mapper.toDto(itemRepository.save(item));
         log.debug("Отправлен ItemDto {}", result);
         return result;
     }
 
     @Override
+    @Transactional
     public CommentDto addComment(long itemId, long userId, CommentDto commentDto) {
-        LocalDateTime today = LocalDateTime.now();
-        bookingRepository.findFirstByItemIdAndBookerIdAndStateAndEndIsBefore(itemId, userId, BookingStatus.APPROVED, today)
+        LocalDateTime timestamp = LocalDateTime.now();
+        bookingRepository.findFirstByItemIdAndBookerIdAndStateAndEndIsBefore(itemId, userId, BookingStatus.APPROVED, timestamp)
                 .orElseThrow(() -> new ValidationException("userId"));
-        Comment comment = CommentMapper.fromDto(commentDto, itemId);
+        Comment comment = Mapper.fromDto(commentDto, itemId);
         comment.setAuthor(checkUser(userId));
-        comment.setCreated(today);
+        comment.setCreated(timestamp);
         log.debug("Добавлен Comment {}", comment);
-        return CommentMapper.toDto(commentRepository.save(comment));
+        return Mapper.toDto(commentRepository.save(comment));
     }
 
     @Override
+    @Transactional
     public ItemDto update(ItemDto itemDto, long userId) {
         User user = checkUser(userId);
         long itemId = itemDto.getId();
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("item"));
         if (item.getOwner().getId() == userId) {
-            Item updatingItem = ItemMapper.fromDto(itemDto, user);
+            Item updatingItem = Mapper.fromDto(itemDto, user);
             updatingItem.setId(itemId);
 
             if (updatingItem.getName() == null) updatingItem.setName(item.getName());
             if (updatingItem.getDescription() == null) updatingItem.setDescription(item.getDescription());
             if (updatingItem.getAvailable() == null) updatingItem.setAvailable(item.getAvailable());
 
-            ItemDto result = ItemMapper.toDto(itemRepository.save(updatingItem));
+            ItemDto result = Mapper.toDto(itemRepository.save(updatingItem));
             log.debug("Отправлен ItemDto {}", result);
             return result;
         }
@@ -126,8 +141,9 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional
     public void deleteById(long itemId, long userId) {
-        UserDto userDto = UserMapper.toDto(checkUser(userId));
+        UserDto userDto = Mapper.toDto(checkUser(userId));
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("item"));
         if (item.getOwner().getId() == userDto.getId()) {
@@ -138,30 +154,31 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional
     public void deleteAll() {
         itemRepository.deleteAll();
         commentRepository.deleteAll();
         log.debug("Все элементы Item удалены");
     }
 
-    private void fillByBooking(ItemDto itemDto, LocalDateTime today, long userId) {
+    private void fillByBooking(ItemDto itemDto, LocalDateTime timestamp, long userId) {
         if (itemDto.getOwnerId() == userId) {
             long itemId = itemDto.getId();
 
             Booking nextBooking = bookingRepository
-                    .findFirstByItemIdAndStartAfterAndStateNotOrderByStartAsc(itemId, today, BookingStatus.REJECTED);
+                    .findFirstByItemIdAndStartAfterAndStateNotOrderByStartAsc(itemId, timestamp, BookingStatus.REJECTED);
             Booking lastBooking = bookingRepository
-                    .findFirstByItemIdAndStartBeforeAndStateNotOrderByEndDesc(itemId, today, BookingStatus.REJECTED);
+                    .findFirstByItemIdAndStartBeforeAndStateNotOrderByEndDesc(itemId, timestamp, BookingStatus.REJECTED);
 
-            if (nextBooking != null) itemDto.setNextBooking(BookingMapper.toShortDto(nextBooking));
-            if (lastBooking != null) itemDto.setLastBooking(BookingMapper.toShortDto(lastBooking));
+            if (nextBooking != null) itemDto.setNextBooking(Mapper.toShortDto(nextBooking));
+            if (lastBooking != null) itemDto.setLastBooking(Mapper.toShortDto(lastBooking));
         }
     }
 
     private void fillByComments(ItemDto itemDto, long userId) {
         long itemId = itemDto.getId();
         List<CommentDto> commentsDto = commentRepository.findAllByItemIdOrderByCreated(itemId).stream()
-                .map(CommentMapper::toDto)
+                .map(Mapper::toDto)
                 .collect(Collectors.toList());
         itemDto.setComments(commentsDto);
     }

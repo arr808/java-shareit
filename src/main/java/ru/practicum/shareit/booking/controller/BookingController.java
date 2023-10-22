@@ -22,6 +22,8 @@ import java.util.List;
 @Slf4j
 public class BookingController {
 
+    private static final String HEADER = "X-Sharer-User-Id";
+
     private final BookingService bookingService;
 
     @Autowired
@@ -31,48 +33,40 @@ public class BookingController {
 
     @GetMapping("/{bookingId}")
     public BookingDto getBookingById(@PathVariable long bookingId,
-                                     @RequestHeader("X-Sharer-User-Id") long userId) {
+                                     @RequestHeader(HEADER) long userId) {
         log.info("Получен запрос GET /bookings/{}", bookingId);
         return bookingService.getBookingById(bookingId, userId);
     }
 
     @GetMapping
     public List<BookingDto> getAllBookingsByBooker(@RequestParam(defaultValue = "ALL") String state,
-                                                   @RequestHeader("X-Sharer-User-Id") long bookerId) {
+                                                   @RequestHeader(HEADER) long bookerId,
+                                                   @RequestParam(defaultValue = "0") int from,
+                                                   @RequestParam(defaultValue = "20") int size) {
         log.info("Получен запрос GET /bookings?state={}", state);
-        BookingState bookingState;
-        try {
-            bookingState = BookingState.valueOf(state);
-        } catch (IllegalArgumentException e) {
-            bookingState = BookingState.UNSUPPORTED_STATUS;
-        }
-        return bookingService.getAllBookingsByBooker(bookerId, bookingState);
+        return bookingService.getAllBookingsByBooker(bookerId, state, from, size);
     }
 
     @GetMapping("/owner")
     public List<BookingDto> getAllBookingsByOwner(@RequestParam(defaultValue = "ALL") String state,
-                                                  @RequestHeader("X-Sharer-User-Id") long ownerId) {
+                                                  @RequestHeader(HEADER) long ownerId,
+                                                  @RequestParam(defaultValue = "0") int from,
+                                                  @RequestParam(defaultValue = "20") int size) {
         log.info("Получен запрос GET /bookings/owner?state={}", state);
-        BookingState bookingState;
-        try {
-            bookingState = BookingState.valueOf(state);
-        } catch (IllegalArgumentException e) {
-            bookingState = BookingState.UNSUPPORTED_STATUS;
-        }
-        return bookingService.getAllBookingsByOwner(ownerId, bookingState);
+        return bookingService.getAllBookingsByOwner(ownerId, state, from, size);
     }
 
     @PostMapping
     public BookingDto addBooking(@RequestBody BookingRequestDto bookingRequestDto,
-                      @RequestHeader("X-Sharer-User-Id") long bookerId) {
+                      @RequestHeader(HEADER) long bookerId) {
         log.info("Получен запрос POST /bookings");
-        return bookingService.addBooking(bookingRequestDto, bookerId);
+        return bookingService.add(bookingRequestDto, bookerId);
     }
 
     @PatchMapping("/{bookingId}")
     public BookingDto bookingReview(@PathVariable long bookingId,
                                     @RequestParam boolean approved,
-                                    @RequestHeader("X-Sharer-User-Id") long ownerId) {
+                                    @RequestHeader(HEADER) long ownerId) {
         log.info("Получен запрос PATCH /bookings/{}?approved={}", bookingId, approved);
         return bookingService.setBookingApprove(bookingId, ownerId, approved);
     }

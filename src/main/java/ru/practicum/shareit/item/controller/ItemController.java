@@ -24,6 +24,8 @@ import java.util.List;
 @Slf4j
 public class ItemController {
 
+    private static final String HEADER = "X-Sharer-User-Id";
+
     private final ItemService itemService;
 
     @Autowired
@@ -33,26 +35,30 @@ public class ItemController {
 
     @GetMapping("/{itemId}")
     public ItemDto getById(@PathVariable long itemId,
-                                @RequestHeader("X-Sharer-User-Id") long userId) {
+                           @RequestHeader(HEADER) long userId) {
         log.info("Получен запрос GET /items/{}", itemId);
         return itemService.getById(itemId, userId);
     }
 
     @GetMapping
-    public List<ItemDto> getAll(@RequestHeader("X-Sharer-User-Id") long userId) {
+    public List<ItemDto> getAll(@RequestHeader(HEADER) long userId,
+                                @RequestParam(defaultValue = "0") int from,
+                                @RequestParam(defaultValue = "20") int size) {
         log.info("Получен запрос GET /items");
-        return itemService.getAll(userId);
+        return itemService.getAll(userId, from, size);
     }
 
     @GetMapping("/search")
-    public List<ItemDto> searchByName(@RequestParam String text) {
+    public List<ItemDto> searchByText(@RequestParam String text,
+                                      @RequestParam(defaultValue = "0") int from,
+                                      @RequestParam(defaultValue = "20") int size) {
         log.info("Получен запрос GET /items/search?text={}", text);
-        return itemService.searchByText(text.toLowerCase());
+        return itemService.searchByText(text.toLowerCase(), from, size);
     }
 
     @PostMapping
     public ItemDto add(@Valid @RequestBody ItemDto itemDto,
-                       @RequestHeader("X-Sharer-User-Id") long userId) {
+                       @RequestHeader(HEADER) long userId) {
         log.info("Получен запрос POST /items");
         return itemService.add(itemDto, userId);
     }
@@ -60,7 +66,7 @@ public class ItemController {
     @PostMapping("/{itemId}/comment")
     public CommentDto addComment(@PathVariable long itemId,
                                  @Valid @RequestBody CommentDto commentDto,
-                                 @RequestHeader("X-Sharer-User-Id") long userId) {
+                                 @RequestHeader(HEADER) long userId) {
         log.info("Получен запрос POST /items/{}/comment", itemId);
         return itemService.addComment(itemId, userId, commentDto);
     }
@@ -68,7 +74,7 @@ public class ItemController {
     @PatchMapping("/{itemId}")
     public ItemDto update(@PathVariable long itemId,
                           @RequestBody ItemDto itemDto,
-                          @RequestHeader("X-Sharer-User-Id") long userId) {
+                          @RequestHeader(HEADER) long userId) {
         log.info("Получен запрос PATCH /items/{}", itemId);
         itemDto.setId(itemId);
         return itemService.update(itemDto, userId);
@@ -76,7 +82,7 @@ public class ItemController {
 
     @DeleteMapping("/{itemId}")
     public void deleteById(@PathVariable long itemId,
-                           @RequestHeader("X-Sharer-User-Id") long userId) {
+                           @RequestHeader(HEADER) long userId) {
         log.info("Получен запрос DELETE /items/{}", itemId);
         itemService.deleteById(itemId, userId);
     }
