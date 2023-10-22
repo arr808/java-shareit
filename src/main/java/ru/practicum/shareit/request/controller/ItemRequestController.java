@@ -22,6 +22,8 @@ import java.util.List;
 @RequestMapping(path = "/requests")
 public class ItemRequestController {
 
+    private static final String HEADER = "X-Sharer-User-Id";
+
     private final ItemRequestService itemRequestService;
 
     @Autowired
@@ -30,13 +32,13 @@ public class ItemRequestController {
     }
 
     @GetMapping
-    public List<ItemRequestDto> getAllByUser(@RequestHeader("X-Sharer-User-Id") long userId) {
+    public List<ItemRequestDto> getAllByUser(@RequestHeader(HEADER) long userId) {
         log.info("Получен запрос GET /requests");
         return itemRequestService.getAllByUser(userId);
     }
 
     @GetMapping("/all")
-    public List<ItemRequestDto> getAll(@RequestHeader("X-Sharer-User-Id") long userId,
+    public List<ItemRequestDto> getAll(@RequestHeader(HEADER) long userId,
                                        @RequestParam(defaultValue = "0") int from,
                                        @RequestParam(defaultValue = "20") int size) {
         log.info("Получен запрос GET /requests/all");
@@ -44,14 +46,14 @@ public class ItemRequestController {
     }
 
     @GetMapping("/{requestId}")
-    public ItemRequestDto getById(@RequestHeader("X-Sharer-User-Id") long userId,
+    public ItemRequestDto getById(@RequestHeader(HEADER) long userId,
                                   @PathVariable long requestId) {
         log.info("Получен запрос GET /requests/{}", requestId);
         return itemRequestService.getById(userId, requestId);
     }
 
     @PostMapping
-    public ItemRequestDto addRequest(@RequestHeader("X-Sharer-User-Id") long userId,
+    public ItemRequestDto addRequest(@RequestHeader(HEADER) long userId,
                                      @Valid @RequestBody ItemRequestShortDto itemRequestShortDto) {
         log.info("Получен запрос POST /requests");
         return itemRequestService.addRequest(userId, itemRequestShortDto);

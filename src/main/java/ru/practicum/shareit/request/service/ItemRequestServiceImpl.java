@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.ItemForRequestDto;
 import ru.practicum.shareit.item.repository.ItemRepository;
@@ -38,6 +39,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ItemRequestDto> getAllByUser(long userId) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("user"));
@@ -50,6 +52,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ItemRequestDto> getAll(long userId, int from, int size) {
         Pageable pageRequest = PaginationAndSortParams.getPageableDesc(from, size, "creation");
         List<ItemRequestDto> result = itemRequestRepository.findAllByRequesterIdNot(userId, pageRequest).stream()
@@ -61,6 +64,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ItemRequestDto getById(long userId, long requestId) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("user"));
@@ -72,6 +76,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     }
 
     @Override
+    @Transactional
     public ItemRequestDto addRequest(long userId, ItemRequestShortDto itemRequestShortDto) {
         User requester = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("user"));

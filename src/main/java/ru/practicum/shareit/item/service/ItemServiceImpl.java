@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.repository.BookingRepository;
@@ -52,6 +53,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ItemDto getById(long itemId, long userId) {
         ItemDto result = Mapper.toDto(itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException("item")));
@@ -63,6 +65,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ItemDto> getAll(long userId, int from, int size) {
         checkUser(userId);
         Pageable pageRequest = PaginationAndSortParams.getPageable(from, size);
@@ -79,6 +82,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ItemDto> searchByText(String text, int from, int size) {
         Pageable pageRequest = PaginationAndSortParams.getPageable(from, size);
         if (text.isBlank()) return new ArrayList<>();
@@ -90,6 +94,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional
     public ItemDto add(ItemDto itemDto, long userId) {
         User user = checkUser(userId);
         ItemRequest itemRequest = itemRequestRepository.findById(itemDto.getRequestId()).orElse(null);
@@ -101,6 +106,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional
     public CommentDto addComment(long itemId, long userId, CommentDto commentDto) {
         LocalDateTime timestamp = LocalDateTime.now();
         bookingRepository.findFirstByItemIdAndBookerIdAndStateAndEndIsBefore(itemId, userId, BookingStatus.APPROVED, timestamp)
@@ -113,6 +119,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional
     public ItemDto update(ItemDto itemDto, long userId) {
         User user = checkUser(userId);
         long itemId = itemDto.getId();
@@ -134,6 +141,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional
     public void deleteById(long itemId, long userId) {
         UserDto userDto = Mapper.toDto(checkUser(userId));
         Item item = itemRepository.findById(itemId)
@@ -146,6 +154,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional
     public void deleteAll() {
         itemRepository.deleteAll();
         commentRepository.deleteAll();

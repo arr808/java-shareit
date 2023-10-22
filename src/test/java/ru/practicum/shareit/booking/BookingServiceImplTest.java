@@ -9,7 +9,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Pageable;
-import ru.practicum.shareit.booking.controller.BookingState;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingRequestDto;
 import ru.practicum.shareit.booking.model.Booking;
@@ -145,7 +144,7 @@ public class BookingServiceImplTest {
                 .thenReturn(List.of(booking));
 
         Assertions.assertEquals(List.of(bookingDto),
-                bookingService.getAllBookingsByBooker(bookerId, BookingState.ALL, 0, 1));
+                bookingService.getAllBookingsByBooker(bookerId, "ALL", 0, 1));
     }
 
     @Test
@@ -158,7 +157,7 @@ public class BookingServiceImplTest {
                 .thenReturn(List.of(booking));
 
         Assertions.assertEquals(List.of(bookingDto),
-                bookingService.getAllBookingsByBooker(bookerId, BookingState.WAITING, 0, 1));
+                bookingService.getAllBookingsByBooker(bookerId, "WAITING", 0, 1));
     }
 
     @Test
@@ -172,7 +171,7 @@ public class BookingServiceImplTest {
                 .thenReturn(List.of(booking));
 
         Assertions.assertEquals(List.of(bookingDto),
-                bookingService.getAllBookingsByBooker(bookerId, BookingState.REJECTED, 0, 1));
+                bookingService.getAllBookingsByBooker(bookerId, "REJECTED", 0, 1));
     }
 
     @Test
@@ -184,7 +183,7 @@ public class BookingServiceImplTest {
                 .thenReturn(List.of(booking));
 
         Assertions.assertEquals(List.of(bookingDto),
-                bookingService.getAllBookingsByBooker(bookerId, BookingState.CURRENT, 0, 1));
+                bookingService.getAllBookingsByBooker(bookerId, "CURRENT", 0, 1));
     }
 
     @Test
@@ -196,7 +195,7 @@ public class BookingServiceImplTest {
                 .thenReturn(List.of(booking));
 
         Assertions.assertEquals(List.of(bookingDto),
-                bookingService.getAllBookingsByBooker(bookerId, BookingState.PAST, 0, 1));
+                bookingService.getAllBookingsByBooker(bookerId, "PAST", 0, 1));
     }
 
     @Test
@@ -208,7 +207,7 @@ public class BookingServiceImplTest {
                 .thenReturn(List.of(booking));
 
         Assertions.assertEquals(List.of(bookingDto),
-                bookingService.getAllBookingsByBooker(bookerId, BookingState.FUTURE, 0, 1));
+                bookingService.getAllBookingsByBooker(bookerId, "FUTURE", 0, 1));
     }
 
     @Test
@@ -217,7 +216,7 @@ public class BookingServiceImplTest {
                 .thenReturn(Optional.ofNullable(booker));
 
         final UnsupportedStatusException exception = Assertions.assertThrows(UnsupportedStatusException.class,
-                () -> bookingService.getAllBookingsByBooker(bookerId, BookingState.UNSUPPORTED_STATUS, 0, 1));
+                () -> bookingService.getAllBookingsByBooker(bookerId, "UNSUPPORTED_STATUS", 0, 1));
 
         Assertions.assertEquals("Unknown state: UNSUPPORTED_STATUS", exception.getParameter());
         Assertions.assertEquals("state", exception.getMessage());
@@ -226,7 +225,7 @@ public class BookingServiceImplTest {
     @Test
     public void shouldThrowExceptionWhenGetAllBookingWithUnknownBooker() {
         final NotFoundException exception = Assertions.assertThrows(NotFoundException.class,
-                () -> bookingService.getAllBookingsByBooker(99, BookingState.ALL, 0, 1));
+                () -> bookingService.getAllBookingsByBooker(99, "ALL", 0, 1));
 
         Assertions.assertEquals("user", exception.getParameter());
         Assertions.assertEquals("не найден", exception.getMessage());
@@ -242,7 +241,7 @@ public class BookingServiceImplTest {
                 .thenReturn(List.of(booking));
 
         Assertions.assertEquals(List.of(bookingDto),
-                bookingService.getAllBookingsByOwner(ownerId, BookingState.ALL, 0, 1));
+                bookingService.getAllBookingsByOwner(ownerId, "ALL", 0, 1));
     }
 
     @Test
@@ -255,7 +254,7 @@ public class BookingServiceImplTest {
                 .thenReturn(List.of(booking));
 
         Assertions.assertEquals(List.of(bookingDto),
-                bookingService.getAllBookingsByOwner(ownerId, BookingState.WAITING, 0, 1));
+                bookingService.getAllBookingsByOwner(ownerId, "WAITING", 0, 1));
     }
 
     @Test
@@ -269,7 +268,7 @@ public class BookingServiceImplTest {
                 .thenReturn(List.of(booking));
 
         Assertions.assertEquals(List.of(bookingDto),
-                bookingService.getAllBookingsByOwner(ownerId, BookingState.REJECTED, 0, 1));
+                bookingService.getAllBookingsByOwner(ownerId, "REJECTED", 0, 1));
     }
 
     @Test
@@ -281,7 +280,7 @@ public class BookingServiceImplTest {
                 .thenReturn(List.of(booking));
 
         Assertions.assertEquals(List.of(bookingDto),
-                bookingService.getAllBookingsByOwner(ownerId, BookingState.CURRENT, 0, 1));
+                bookingService.getAllBookingsByOwner(ownerId, "CURRENT", 0, 1));
     }
 
     @Test
@@ -293,7 +292,7 @@ public class BookingServiceImplTest {
                 .thenReturn(List.of(booking));
 
         Assertions.assertEquals(List.of(bookingDto),
-                bookingService.getAllBookingsByOwner(ownerId, BookingState.PAST, 0, 1));
+                bookingService.getAllBookingsByOwner(ownerId, "PAST", 0, 1));
     }
 
     @Test
@@ -305,7 +304,7 @@ public class BookingServiceImplTest {
                 .thenReturn(List.of(booking));
 
         Assertions.assertEquals(List.of(bookingDto),
-                bookingService.getAllBookingsByOwner(ownerId, BookingState.FUTURE, 0, 1));
+                bookingService.getAllBookingsByOwner(ownerId, "FUTURE", 0, 1));
     }
 
     @Test
@@ -314,7 +313,7 @@ public class BookingServiceImplTest {
                 .thenReturn(Optional.ofNullable(owner));
 
         final UnsupportedStatusException exception = Assertions.assertThrows(UnsupportedStatusException.class,
-                () -> bookingService.getAllBookingsByOwner(ownerId, BookingState.UNSUPPORTED_STATUS, 0, 1));
+                () -> bookingService.getAllBookingsByOwner(ownerId, "UNSUPPORTED_STATUS", 0, 1));
 
         Assertions.assertEquals("Unknown state: UNSUPPORTED_STATUS", exception.getParameter());
         Assertions.assertEquals("state", exception.getMessage());
@@ -323,7 +322,7 @@ public class BookingServiceImplTest {
     @Test
     public void shouldThrowExceptionWhenGetAllBookingWithUnknownOwner() {
         final NotFoundException exception = Assertions.assertThrows(NotFoundException.class,
-                () -> bookingService.getAllBookingsByOwner(99, BookingState.ALL, 0, 1));
+                () -> bookingService.getAllBookingsByOwner(99, "ALL", 0, 1));
 
         Assertions.assertEquals("user", exception.getParameter());
         Assertions.assertEquals("не найден", exception.getMessage());

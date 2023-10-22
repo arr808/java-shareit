@@ -10,7 +10,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.booking.controller.BookingController;
-import ru.practicum.shareit.booking.controller.BookingState;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingRequestDto;
 import ru.practicum.shareit.booking.service.BookingService;
@@ -69,7 +68,7 @@ public class BookingControllerTest {
 
     @Test
     public void shouldReturnBookingsByBooker() throws Exception {
-        when(bookingService.getAllBookingsByBooker(userId, BookingState.ALL, 0, 20))
+        when(bookingService.getAllBookingsByBooker(userId, "ALL", 0, 20))
                 .thenReturn((List.of(bookingDto)));
 
         mvc.perform(get(QUERY + "/?state=")
@@ -80,7 +79,7 @@ public class BookingControllerTest {
 
     @Test
     public void shouldReturnBookingsByOwner() throws Exception {
-        when(bookingService.getAllBookingsByOwner(userId, BookingState.ALL, 0, 20))
+        when(bookingService.getAllBookingsByOwner(userId, "ALL", 0, 20))
                 .thenReturn((List.of(bookingDto)));
 
         mvc.perform(get(QUERY + "/owner?state=")

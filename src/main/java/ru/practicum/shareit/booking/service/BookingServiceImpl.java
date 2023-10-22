@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.controller.BookingState;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingRequestDto;
@@ -41,6 +42,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public BookingDto getBookingById(long bookingId, long userId) {
         checkUser(userId);
         BookingDto result = Mapper.toDto(bookingRepository.getBookingById(bookingId, userId)
@@ -50,7 +52,11 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDto> getAllBookingsByBooker(long bookerId, BookingState state, int from, int size) {
+    @Transactional(readOnly = true)
+    public List<BookingDto> getAllBookingsByBooker(long bookerId, String stateStr, int from, int size) {
+
+        BookingState state = getState(stateStr);
+
         checkUser(bookerId);
         Pageable pageRequest = PaginationAndSortParams.getPageableDesc(from, size, "start");
         LocalDateTime timestamp = LocalDateTime.now();
@@ -85,7 +91,11 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDto> getAllBookingsByOwner(long ownerId, BookingState state, int from, int size) {
+    @Transactional(readOnly = true)
+    public List<BookingDto> getAllBookingsByOwner(long ownerId, String stateStr, int from, int size) {
+
+        BookingState state = getState(stateStr);
+
         checkUser(ownerId);
         Pageable pageRequest = PaginationAndSortParams.getPageableDesc(from, size, "start");
         LocalDateTime timestamp = LocalDateTime.now();
@@ -120,6 +130,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    @Transactional
     public BookingDto add(BookingRequestDto bookingRequestDto, long bookerId) {
         User booker = checkUser(bookerId);
         Item item = itemRepository.findById(bookingRequestDto.getItemId())
@@ -133,6 +144,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    @Transactional
     public BookingDto setBookingApprove(long bookingId, long ownerId, boolean approved) {
         checkUser(ownerId);
         Booking booking = bookingRepository.findBookingByIdAndItemOwnerId(bookingId, ownerId)
@@ -167,5 +179,15 @@ public class BookingServiceImpl implements BookingService {
     private User checkUser(long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("user"));
+    }
+
+    private BookingState getState(String stateStr) {
+        BookingState state;
+        try {
+            state = BookingState.valueOf(stateStr);
+        } catch (IllegalArgumentException e) {
+            state = BookingState.UNSUPPORTED_STATUS;
+        }
+        return state;
     }
 }

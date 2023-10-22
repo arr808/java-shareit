@@ -3,6 +3,7 @@ package ru.practicum.shareit.user.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.model.Item;
@@ -29,6 +30,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public UserDto getById(long id) {
         UserDto result = Mapper.toDto(userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("user")));
@@ -37,6 +39,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<UserDto> getAll() {
         List<UserDto> result = userRepository.findAll().stream()
                 .map(Mapper::toDto)
@@ -46,6 +49,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public UserDto add(UserDto userDto) {
         validation(userDto);
         User user = Mapper.fromDto(userDto);
@@ -55,6 +59,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public UserDto update(long id, UserDto userDto) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("user"));
@@ -70,6 +75,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public void deleteById(long id) {
         userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("user"));
@@ -79,6 +85,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public void deleteAll() {
         userRepository.deleteAll();
         itemRepository.deleteAll();
