@@ -28,6 +28,7 @@ import javax.validation.constraints.PositiveOrZero;
 public class BookingController {
 	private final BookingClient bookingClient;
 	private static final String HEADER = "X-Sharer-User-Id";
+
 	@Autowired
 	public BookingController(BookingClient bookingClient) {
 		this.bookingClient = bookingClient;
