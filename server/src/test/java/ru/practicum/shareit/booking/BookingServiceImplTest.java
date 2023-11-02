@@ -208,6 +208,7 @@ public class BookingServiceImplTest {
         Assertions.assertEquals(List.of(bookingDto),
                 bookingService.getAllBookingsByBooker(bookerId, "FUTURE", 0, 1));
     }
+
     @Test
     public void shouldThrowExceptionWhenGetAllBookingWithUnknownBooker() {
         final NotFoundException exception = Assertions.assertThrows(NotFoundException.class,
@@ -292,6 +293,7 @@ public class BookingServiceImplTest {
         Assertions.assertEquals(List.of(bookingDto),
                 bookingService.getAllBookingsByOwner(ownerId, "FUTURE", 0, 1));
     }
+
     @Test
     public void shouldThrowExceptionWhenGetAllBookingWithUnknownOwner() {
         final NotFoundException exception = Assertions.assertThrows(NotFoundException.class,
