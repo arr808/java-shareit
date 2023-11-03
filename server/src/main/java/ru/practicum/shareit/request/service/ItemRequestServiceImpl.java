@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@Transactional
 public class ItemRequestServiceImpl implements ItemRequestService {
 
     private final ItemRequestRepository itemRequestRepository;
@@ -76,7 +77,6 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     }
 
     @Override
-    @Transactional
     public ItemRequestDto addRequest(long userId, ItemRequestShortDto itemRequestShortDto) {
         User requester = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("user"));

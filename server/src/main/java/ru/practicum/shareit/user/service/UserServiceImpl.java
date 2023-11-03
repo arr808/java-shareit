@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@Transactional
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
@@ -49,7 +50,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional
     public UserDto add(UserDto userDto) {
         validation(userDto);
         User user = Mapper.fromDto(userDto);
@@ -59,7 +59,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional
     public UserDto update(long id, UserDto userDto) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("user"));
@@ -75,7 +74,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional
     public void deleteById(long id) {
         userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("user"));
@@ -85,7 +83,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional
     public void deleteAll() {
         userRepository.deleteAll();
         itemRepository.deleteAll();

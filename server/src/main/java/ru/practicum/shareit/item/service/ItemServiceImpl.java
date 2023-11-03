@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@Transactional
 public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository itemRepository;
@@ -94,7 +95,6 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    @Transactional
     public ItemDto add(ItemDto itemDto, long userId) {
         User user = checkUser(userId);
         ItemRequest itemRequest = itemRequestRepository.findById(itemDto.getRequestId()).orElse(null);
@@ -106,7 +106,6 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    @Transactional
     public CommentDto addComment(long itemId, long userId, CommentDto commentDto) {
         LocalDateTime timestamp = LocalDateTime.now();
         bookingRepository.findFirstByItemIdAndBookerIdAndStateAndEndIsBefore(itemId, userId, BookingStatus.APPROVED, timestamp)
@@ -119,7 +118,6 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    @Transactional
     public ItemDto update(ItemDto itemDto, long userId) {
         User user = checkUser(userId);
         long itemId = itemDto.getId();
@@ -141,7 +139,6 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    @Transactional
     public void deleteById(long itemId, long userId) {
         UserDto userDto = Mapper.toDto(checkUser(userId));
         Item item = itemRepository.findById(itemId)
@@ -154,7 +151,6 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    @Transactional
     public void deleteAll() {
         itemRepository.deleteAll();
         commentRepository.deleteAll();

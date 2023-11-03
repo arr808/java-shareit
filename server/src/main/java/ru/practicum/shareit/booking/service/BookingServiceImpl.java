@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@Transactional
 public class BookingServiceImpl implements BookingService {
 
     private final BookingRepository bookingRepository;
@@ -124,7 +125,6 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    @Transactional
     public BookingDto add(BookingRequestDto bookingRequestDto, long bookerId) {
         User booker = checkUser(bookerId);
         Item item = itemRepository.findById(bookingRequestDto.getItemId())
@@ -138,7 +138,6 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    @Transactional
     public BookingDto setBookingApprove(long bookingId, long ownerId, boolean approved) {
         checkUser(ownerId);
         Booking booking = bookingRepository.findBookingByIdAndItemOwnerId(bookingId, ownerId)
