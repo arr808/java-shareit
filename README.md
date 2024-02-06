@@ -7,4 +7,4 @@
 Для деплоя используется Docker контейнер.
 
 ## Схема базы данных
-![Схема БД]([src/main/resources/BD_scheme.png](https://github.com/arr808/java-shareit/blob/main/server/src/main/resources/db_scheme.png)https://github.com/arr808/java-shareit/blob/main/server/src/main/resources/db_scheme.png)
+![Схема БД](https://github.com/arr808/java-shareit/blob/main/server/src/main/resources/db_scheme.png)
